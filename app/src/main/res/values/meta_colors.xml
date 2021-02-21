@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">@color/dark_grey</color>
+    <color name="primary_variant">@color/transparent_dark_grey</color>
+    <color name="secondary">@color/grey</color>
+    <color name ="secondary_variant">@color/transparent_grey</color>
+    <color name="on_primary">@color/bright_grey</color>
+    <color name="on_primary_variant">@color/dirty_white</color>
+    <color name="accent">@color/teal</color>
+    <color name="accent_variant">@color/green</color>
+    <color name="accent_secondary">@color/red</color>
+    <color name="transparent">#00000000</color>
+
+</resources>

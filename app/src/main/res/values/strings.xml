@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MainActivity</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="set_name_for_group">Set name</string>
+    <string name="example_code">XXXXXX</string>
+    <string name="join_new_group">Join new group</string>
+    <string name="create_new_group">Create new group</string>
+    <string name="your_balance">Your balance</string>
+    <string name="_0">0</string>
+    <string name="payments">Payments</string>
+</resources>

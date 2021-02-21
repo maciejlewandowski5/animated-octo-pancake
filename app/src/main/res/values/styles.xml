@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="title">
+
+        <item name="android:textSize">
+            36sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+        </item>
+
+    </style>
+
+    <style name="small_text">
+
+        <item name="android:textSize">
+            13sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+        </item>
+
+    </style>
+
+    <style name="medium_text">
+
+        <item name="android:textSize">
+            18sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+        </item>
+
+    </style>
+
+    <style name="huge_text">
+
+        <item name="android:textSize">
+            72sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+        </item>
+
+    </style>
+
+    <style name="on_bright"><item name="android:textSize">
+        18sp
+    </item>
+
+        <item name="android:textColor">
+            @color/primary
+        </item>
+    </style>
+
+
+</resources>
