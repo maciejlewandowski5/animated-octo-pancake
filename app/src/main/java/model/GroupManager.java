@@ -6,12 +6,18 @@ import java.util.List;
 
 public class GroupManager implements Serializable {
 
-    public Group getCurrentGroup(){
+    private List<Group> groups;
 
-        return new Group();
+    public GroupManager() {
+        this.groups = new ArrayList<>();
     }
-    public ArrayList<Group> getGroups(){
 
-        return new ArrayList<>();
+    public void addGroup(String code, String name){
+        groups.add(new Group(code, name));
+    }
+
+    public List<Group> getGroups(){
+
+        return this.groups;
     }
 }
