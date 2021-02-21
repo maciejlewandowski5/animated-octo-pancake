@@ -10,4 +10,8 @@
     <string name="_0">0</string>
     <string name="payments">Payments</string>
     <string name="history">History</string>
+    <string name="title">title</string>
+    <string name="user">user</string>
+    <string name="_21_02_2021">21-02-2021</string>
+    <string name="dd_mm_yyyy">dd-MM-yyyy</string>
 </resources>

@@ -56,6 +56,30 @@
             @color/primary
         </item>
     </style>
+    <style name="list_title">
+
+        <item name="android:textSize">
+            24sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+        </item>
+
+    </style>
+    <style name="tiny">
+
+        <item name="android:textSize">
+            12sp
+        </item>
+
+        <item name="android:textColor">
+            @color/on_primary_variant
+
+        </item>
+
+    </style>
+
 
 
 </resources>
