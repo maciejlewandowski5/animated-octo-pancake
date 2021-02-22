@@ -9,7 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MainActivity">
-        <activity android:name=".ExpenseEditor"></activity>
+        <activity android:name=".CreateGroup"></activity>
+        <activity android:name=".JoinGroup" />
+        <activity android:name=".PaymentsList" />
+        <activity android:name=".ExpenseEditor" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

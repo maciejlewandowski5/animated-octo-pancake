@@ -81,7 +81,7 @@ public class InfiniteScroller<T extends Serializable> {
             container.addView(constraintLayout);
             Button button = new Button(app);
             button.setId(View.generateViewId());
-            button.setBackgroundColor(Color.TRANSPARENT);//Color.valueOf(0.5f,0,0,0.5f).toArgb());//Color.TRANSPARENT);
+            button.setBackgroundColor(Color.TRANSPARENT);//Color.valueOf(0.5f,0,0,0.5f).toArgb());//);
             button.setLayoutParams(constraintLayout.getLayoutParams());
 
 
