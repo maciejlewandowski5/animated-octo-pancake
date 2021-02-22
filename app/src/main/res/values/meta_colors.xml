@@ -8,7 +8,11 @@
     <color name="on_primary_variant">@color/dirty_white</color>
     <color name="accent">@color/teal</color>
     <color name="accent_variant">@color/green</color>
+    <color name="accent_variant_transparent">@color/green_transparent</color>
     <color name="accent_secondary">@color/red</color>
+    <color name="accent_secondary_transparent">@color/red_transparent</color>
     <color name="transparent">#00000000</color>
+    <color name="green_transparent">#3300B574</color>
+    <color name="red_transparent">#55B46464</color>
 
 </resources>

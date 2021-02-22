@@ -1,5 +1,6 @@
 package com.example.exxpense;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -72,9 +73,11 @@ public class TopBar extends Fragment {
                     public boolean onMenuItemClick(MenuItem item) {
                         CharSequence itemTitle = item.getTitle();
                         if (itemTitle.equals(getString(R.string.join_new_group))) {
-
+                            Intent intent = new Intent(getActivity(),JoinGroup.class);
+                            requireActivity().startActivity(intent);
                         } else if (itemTitle.equals(getString(R.string.create_new_group))) {
-
+                            Intent intent = new Intent(getActivity(),CreateGroup.class);
+                            requireActivity().startActivity(intent);
                         } else {
                             for (Group group : groupManager.getGroups()) {
                                 if (itemTitle.equals(group.getName())) {
@@ -91,6 +94,8 @@ public class TopBar extends Fragment {
                         popupMenu.show();
                     }
                 });
+            }else {
+                menuIcon.setVisibility(View.INVISIBLE);
             }
         }
         return root;

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -60,7 +61,8 @@ public class ListElement extends Fragment {
 
             date.setText(simpleDateFormat.format(expense.getDate()));
 
-            amount.setText(String.format(Locale.getDefault(), "#.##", expense.getAmount()));
+            DecimalFormat format = new DecimalFormat("#.##");
+            amount.setText(format.format(expense.getAmount()));
         }
         return root;
     }

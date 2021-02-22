@@ -8,10 +8,24 @@
     <string name="create_new_group">Create new group</string>
     <string name="your_balance">Your balance</string>
     <string name="_0">0</string>
-    <string name="payments">Payments</string>
     <string name="history">History</string>
     <string name="title">title</string>
     <string name="user">user</string>
     <string name="_21_02_2021">21-02-2021</string>
     <string name="dd_mm_yyyy">dd-MM-yyyy</string>
+    <string name="edit_expense">Edit expense</string>
+    <string name="name">name</string>
+    <string name="amount">Amount</string>
+    <string name="date">Date</string>
+    <string name="payer">Payer</string>
+    <string name="borrowers">Borrowers</string>
+    <string name="add_borrower">Add borrower</string>
+    <string name="everyone">Everyone</string>
+    <string name="sa">Everyone</string>
+    <string name="payments">Payments</string>
+    <string name="code">Code</string>
+    <string name="ex_code">XYZ123</string>
+    <string name="your_name">Your name</string>
+    <string name="invite_collaborators_with_code">Invite collaborators with code</string>
+    <string name="group_name">Group name</string>
 </resources>
