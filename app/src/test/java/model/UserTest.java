@@ -11,7 +11,7 @@ public class UserTest {
 
     @Test
     public void additionUser_isCorrect(){
-        User user = new User("123", "Name");
+        User user = new User("Name");
         assertNotNull(user);
     }
 

@@ -20,7 +20,7 @@ public class ExampleUnitTest {
 
     @Test
     public void user(){
-        User user = new User("123", "Name");
+        User user = new User("Name");
         System.out.println(user.getClass().getName());
     }
 }

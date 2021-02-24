@@ -13,9 +13,9 @@ public class ExpenseTest {
     @Test
 
     public void additionExpense_isCorrect(){
-        User payer = new User("1", "Bohdan");
-        User borrower1 = new User("2", "Maciek");
-        User borrower2 = new User("3", "Marcin");
+        User payer = new User("Bohdan");
+        User borrower1 = new User("Maciek");
+        User borrower2 = new User("Marcin");
         List<User> borrowers = new ArrayList<>();
         borrowers.add(borrower1);
         borrowers.add(borrower2);

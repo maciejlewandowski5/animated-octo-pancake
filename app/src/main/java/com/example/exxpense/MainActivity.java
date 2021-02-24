@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction =fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(new GroupManager(),true);
+        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(),true);
         fragmentTransaction.replace(R.id.fragment,topBar);
         fragmentTransaction.commit();
     }
