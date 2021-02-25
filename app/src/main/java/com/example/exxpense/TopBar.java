@@ -1,5 +1,6 @@
 package com.example.exxpense;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import model.Group;
 import model.GroupManager;
+import model.User;
 
 
 public class TopBar extends Fragment {
@@ -57,6 +59,9 @@ public class TopBar extends Fragment {
             TextView code = root.findViewById(R.id.code);
             ImageView menuIcon = root.findViewById(R.id.menu_icon);
 
+            groupManager.addGroup("DCX","wakacje", new User("Ala"));
+            groupManager.addGroup("ABC","kolacje", new User("Ala"));
+
             title.setText(groupManager.getCurrentGroup().getName());
             code.setText(groupManager.getCurrentGroup().getCode());
             if (menuVisible) {
@@ -72,13 +77,17 @@ public class TopBar extends Fragment {
                     public boolean onMenuItemClick(MenuItem item) {
                         CharSequence itemTitle = item.getTitle();
                         if (itemTitle.equals(getString(R.string.join_new_group))) {
-
+                            Intent intent = new Intent(getActivity(),JoinGroup.class);
+                            requireActivity().startActivity(intent);
                         } else if (itemTitle.equals(getString(R.string.create_new_group))) {
-
+                            Intent intent = new Intent(getActivity(),CreateGroup.class);
+                            requireActivity().startActivity(intent);
                         } else {
                             for (Group group : groupManager.getGroups()) {
                                 if (itemTitle.equals(group.getName())) {
-
+                                    groupManager.setCurrentGroup(group);
+                                    title.setText(groupManager.getCurrentGroup().getName());
+                                    code.setText(groupManager.getCurrentGroup().getCode());
                                 }
                             }
                         }
@@ -91,6 +100,8 @@ public class TopBar extends Fragment {
                         popupMenu.show();
                     }
                 });
+            }else {
+                menuIcon.setVisibility(View.INVISIBLE);
             }
         }
         return root;

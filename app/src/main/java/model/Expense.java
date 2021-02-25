@@ -1,9 +1,8 @@
 package model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +33,14 @@ public class Expense implements Serializable {
         return amount;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Date getDateTime() {
+        return dateTime;
+    }
+
     public List<User> getBorrowers() {
         return borrowers;
     }
@@ -53,5 +60,6 @@ public class Expense implements Serializable {
                 ", name='" + name + '\'' +
                 '}' + "\n";
     }
+
 
 }

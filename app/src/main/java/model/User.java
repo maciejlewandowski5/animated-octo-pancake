@@ -1,8 +1,10 @@
 package model;
 
+
+import java.io.Serializable;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
     private String id;
     private String name;
 
@@ -27,4 +29,8 @@ public class User {
                 ", name='" + name + '\'' +
                 '}';
     }
+    public String getName() {
+        return name;
+    }
+
 }

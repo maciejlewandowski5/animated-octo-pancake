@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+
 import java.util.List;
 
-public class ExpenseManager {
+public class ExpenseManager implements Serializable {
     private List<Expense> expenses;
 
     public ExpenseManager() {
@@ -55,7 +57,7 @@ public class ExpenseManager {
 
     }
 
-    public List<Expense> getUserPayDebtExpenses(User mainUser, List<User> users) {
+    List<Expense> getUserPayDebtExpenses(User mainUser, List<User> users) {
         List<Expense> debtExpenses = new ArrayList<>();
         for (User user : users) {
             if (!user.equals(mainUser)) {
@@ -109,6 +111,5 @@ public class ExpenseManager {
         }
         return userToUserBalance;
     }
-
 
 }

@@ -2,6 +2,7 @@ package model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -52,5 +53,33 @@ public class Group implements Serializable {
             users.add(user);
     }
 
+    public ArrayList<User> getUsers() {
+        ArrayList<User> result = new ArrayList<User>();
 
+        for (Integer i = 0; i < 10; i++) {
+            result.add(new User(i.toString()));
+        }
+        return result;
+    }
+
+    //TODO::
+    public User getCurrentUser() {
+        return new User("CurrentUser");
+    }
+    //TODO::
+    public float getMeanAmount() {
+        return 15;
+    }
+    //TODO::
+    public float getMaxAmount() { // średnia plus odchylenie standardowe
+        return 57.78f;
+    }
+    //TODO::
+    public float getMinAmount() { // średnia minus odchylenie standardowe
+        return 57.78f;
+    }
+    //TODO::
+    public ExpenseManager getExpenseManager(){
+        return new ExpenseManager();
+    }
 }
