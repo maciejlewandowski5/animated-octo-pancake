@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import model.Expense;
 import model.GroupManager;
+import model.User;
 
 public class MainActivity extends AppCompatActivity {
     private static final String EXPENSE = "EXPENSE";
@@ -41,34 +42,38 @@ public class MainActivity extends AppCompatActivity {
         history = findViewById(R.id.history_container);
         historyTex = findViewById(R.id.history);
 
-        MainActivity that =  this;
-        InfiniteScroller<Expense> infiniteScroller = new InfiniteScroller<>(container, 11 +11+2+ 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
+        MainActivity that = this;
+        InfiniteScroller<Expense> infiniteScroller = new InfiniteScroller<>(container, 11 + 11 + 2 + 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
             @Override
             public void onClick(View view, Serializable object, int index) {
-                Intent intent = new Intent(that,ExpenseEditor.class);
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that, new Pair<>(history,"cont"));
-                intent.putExtra(EXPENSE,object);
-                startActivity(intent,options.toBundle());
+                Intent intent = new Intent(that, ExpenseEditor.class);
+                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that, new Pair<>(history, "cont"));
+                intent.putExtra(EXPENSE, object);
+                startActivity(intent, options.toBundle());
             }
-        },ListElement::newInstance,this);
+        }, ListElement::newInstance, this);
 
         ArrayList<Expense> expenses = new ArrayList<Expense>();
-        for(int i=0;i<10;i++){
-            expenses.add(new Expense());
+        for (int i = 0; i < 10; i++) {
+            ArrayList<User> borrowers = new ArrayList<>();
+            for (int j = 0; j < 4; j++) {
+                borrowers.add(new User(String.valueOf(i + j)));
+            } ;
+            expenses.add(new Expense((float) (i * 0.33 + 10), "Port", new User("Tomek"), new ArrayList<User>()));
         }
 
         infiniteScroller.populate(expenses);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction =fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(new GroupManager(),true);
-        fragmentTransaction.replace(R.id.fragment,topBar);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), true);
+        fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
     }
 
     public void startPaymentsList(View view) {
-        Intent intent = new Intent(this,PaymentsList.class);
-        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history,"cont"));
-        startActivity(intent,options.toBundle());
+        Intent intent = new Intent(this, PaymentsList.class);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
+        startActivity(intent, options.toBundle());
     }
 }

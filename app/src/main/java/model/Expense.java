@@ -1,13 +1,65 @@
 package model;
 
 import java.io.Serializable;
+
+
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 public class Expense implements Serializable {
 
-    public String getTitle(){return "title";}
-    public String getUser(){return "user";}
-    public Date getDate(){return new Date();}
-    public float getAmount(){return 10.58f;}
+    private User payer;
+    private List<User> borrowers;
+    private float amount;
+    private Date dateTime;
+    private String id;
+    private String name;
+
+    public Expense(float amount, String name, User payer, List<User> borrowers) {
+        this.amount = amount;
+        this.dateTime = new Date(System.currentTimeMillis());
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.payer = payer;
+        this.borrowers = borrowers;
+    }
+
+    public User getPayer() {
+        return payer;
+    }
+
+    public float getAmount(){
+        return amount;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Date getDateTime() {
+        return dateTime;
+    }
+
+    public List<User> getBorrowers() {
+        return borrowers;
+    }
+
+    public int getNumberOfBorrowers(){
+        return borrowers.size();
+    }
+
+    @Override
+    public String toString() {
+        return "Expense{" +
+                "payer=" + payer +
+                ", borrowers=" + borrowers +
+                ", amount=" + amount +
+                ", dateTime=" + dateTime +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}' + "\n";
+    }
+
 
 }

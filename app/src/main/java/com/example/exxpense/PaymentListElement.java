@@ -47,7 +47,7 @@ public class PaymentListElement extends Fragment {
     private void expenseFormatter(TextView amount, TextView userName,ImageView circle) {
         DecimalFormat format = new DecimalFormat("#.##");
         amount.setText(format.format(expense.getAmount()));
-        userName.setText(expense.getUser());
+        userName.setText(expense.getPayer().getName());
         if(expense.getAmount()<0) {
             circle.setImageResource(R.drawable.circle_red);
         }else if (expense.getAmount()>0){

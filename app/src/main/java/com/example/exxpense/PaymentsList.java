@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import model.Expense;
 import model.Group;
 import model.GroupManager;
+import model.User;
 
 public class PaymentsList extends AppCompatActivity {
 
@@ -34,13 +35,13 @@ public class PaymentsList extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(new GroupManager(), false);
+        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), false);
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 
 
-        group = new Group();
-        debts = group.getExpenseManager().getPayDebtExpenses();
+        group = new Group("XXAS","Lot",new User("Ola"));
+        debts = (ArrayList<Expense>) group.getCurrentUserSuggestedPayDebtExpenses();
         toPay = new ArrayList<>();
 
         LinearLayout container = findViewById(R.id.container);

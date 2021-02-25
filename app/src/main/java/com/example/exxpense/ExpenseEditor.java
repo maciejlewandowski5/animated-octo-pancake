@@ -68,13 +68,13 @@ public class ExpenseEditor extends AppCompatActivity {
         setContentView(R.layout.activity_expense_editor);
 
         borrowers = new ArrayList<>();
-        group = new Group();
+        group = new Group("XXXX","Żagle",new User("Ala"));
         payer = new User("Payer");
         calendar = Calendar.getInstance();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(new GroupManager(), false);
+        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), false);
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 

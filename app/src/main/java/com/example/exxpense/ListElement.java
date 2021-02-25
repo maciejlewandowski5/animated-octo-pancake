@@ -54,12 +54,12 @@ public class ListElement extends Fragment {
             TextView date = root.findViewById(R.id.date);
             TextView amount = root.findViewById(R.id.amount);
 
-            title.setText(expense.getTitle());
-            user.setText(expense.getUser());
+            title.setText(expense.getName());
+            user.setText(expense.getPayer().getName());
 
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy hh:mm", Locale.getDefault());
 
-            date.setText(simpleDateFormat.format(expense.getDate()));
+            date.setText(simpleDateFormat.format(expense.getDateTime()));
 
             DecimalFormat format = new DecimalFormat("#.##");
             amount.setText(format.format(expense.getAmount()));

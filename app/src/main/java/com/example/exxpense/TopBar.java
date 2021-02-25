@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import model.Group;
 import model.GroupManager;
+import model.User;
 
 
 public class TopBar extends Fragment {
@@ -58,6 +59,9 @@ public class TopBar extends Fragment {
             TextView code = root.findViewById(R.id.code);
             ImageView menuIcon = root.findViewById(R.id.menu_icon);
 
+            groupManager.addGroup("DCX","wakacje", new User("Ala"));
+            groupManager.addGroup("ABC","kolacje", new User("Ala"));
+
             title.setText(groupManager.getCurrentGroup().getName());
             code.setText(groupManager.getCurrentGroup().getCode());
             if (menuVisible) {
@@ -81,7 +85,9 @@ public class TopBar extends Fragment {
                         } else {
                             for (Group group : groupManager.getGroups()) {
                                 if (itemTitle.equals(group.getName())) {
-
+                                    groupManager.setCurrentGroup(group);
+                                    title.setText(groupManager.getCurrentGroup().getName());
+                                    code.setText(groupManager.getCurrentGroup().getCode());
                                 }
                             }
                         }
