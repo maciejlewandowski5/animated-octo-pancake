@@ -33,8 +33,14 @@ public class Group implements Serializable {
     }
 
     public Group() {
-
+        this.users = new ArrayList<>();
+        this.expenseManager = new ExpenseManager();
+        this.id ="";
+        this.code = "";
+        this.name = "";
+        currentUser = new User("");
     }
+
 
     @Exclude
     public float getCurrentUsersBalance() {
@@ -162,7 +168,7 @@ public class Group implements Serializable {
     //TODO::
     public void addUserDebt(float a) {
     }
-    
+
 
     public void setUserDebt(User user,String borrower,float a) {
     }

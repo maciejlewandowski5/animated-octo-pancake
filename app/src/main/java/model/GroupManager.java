@@ -32,7 +32,7 @@ public class GroupManager implements Serializable {
         group.setName(documentSnapshot.getString("name"));
         group.setNumberOfExpenses(documentSnapshot.getLong("numberOfExpenses"));
         group.setTotalBallance(documentSnapshot.getDouble("totalBallance"));
-        Set<String> usersIds = ((Map<String, Object>) documentSnapshot.getData().get("userBallance")).keySet();
+        Set<String> usersIds = ((Map<String, Object>) documentSnapshot.getData().get("usersBallance")).keySet();
         for (String userId : usersIds) {
             group.addUser(new User(userId));
         }

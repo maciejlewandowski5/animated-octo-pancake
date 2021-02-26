@@ -95,10 +95,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        db.collection("Main").document("Xov9e4ff9JWRDcTHuEsy").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        db.collection("Main").document("pRWKy6Zg6Efv7kqfT5IL").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Group.fromDocumentSnapshot(documentSnapshot);
+                if(documentSnapshot.getData()!=null) {
+                    GroupManager.getInstance().addGroup(documentSnapshot);
+                }}
+        });
+
+        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if(documentSnapshot.getData()!=null){
+                User user1 = User.createUser(documentSnapshot);}
             }
         });
 
