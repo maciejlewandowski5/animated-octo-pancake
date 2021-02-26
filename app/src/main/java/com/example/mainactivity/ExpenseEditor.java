@@ -1,12 +1,12 @@
-package com.example.exxpense;
+package com.example.mainactivity;
 
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,8 +16,8 @@ import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.exxpense.helpers.DecimalDigitsInputFilter;
-import com.example.exxpense.helpers.Utils;
+import com.example.mainactivity.helpers.DecimalDigitsInputFilter;
+import com.example.mainactivity.helpers.Utils;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -182,7 +182,7 @@ public class ExpenseEditor extends AppCompatActivity {
                     }
                     if (itemTitle.equals(getString(R.string.everyone))) {
                         borrowers.clear();
-                        borrowers = (ArrayList<User>) group.getUsers().clone();
+                        borrowers = (ArrayList<User>) ((ArrayList<User>) group.getUsers()).clone();
                     }
                     refreshDisplayedBorrowers(borrowers);
                     return false;

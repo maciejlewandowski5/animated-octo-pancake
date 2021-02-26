@@ -1,4 +1,4 @@
-package com.example.exxpense.helpers;
+package com.example.mainactivity.helpers;
 
 import android.text.InputFilter;
 import android.text.Spanned;

@@ -28,4 +28,7 @@
     <string name="your_name">Your name</string>
     <string name="invite_collaborators_with_code">Invite collaborators with code</string>
     <string name="group_name">Group name</string>
+    <string name="you_logged_in">You logged in</string>
+    <string name="login_failed">Login failed</string>
+
 </resources>

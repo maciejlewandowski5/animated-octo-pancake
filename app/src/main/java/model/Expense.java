@@ -1,5 +1,7 @@
 package model;
 
+import com.google.firebase.firestore.DocumentId;
+
 import java.io.Serializable;
 
 
@@ -13,6 +15,7 @@ public class Expense implements Serializable {
     private List<User> borrowers;
     private float amount;
     private Date dateTime;
+    @DocumentId
     private String id;
     private String name;
 
@@ -23,6 +26,10 @@ public class Expense implements Serializable {
         this.name = name;
         this.payer = payer;
         this.borrowers = borrowers;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public User getPayer() {

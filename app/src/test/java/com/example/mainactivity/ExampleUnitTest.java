@@ -1,4 +1,4 @@
-package com.example.exxpense;
+package com.example.mainactivity;
 
 import org.junit.Test;
 

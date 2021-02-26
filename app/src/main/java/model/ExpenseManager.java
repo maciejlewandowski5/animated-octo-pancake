@@ -1,5 +1,7 @@
 package model;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -20,11 +22,20 @@ public class ExpenseManager implements Serializable {
         expenses.add(new Expense(amount, name, payer, borrowers));
     }
 
+    public float getTotalBallance() {
+        float result = 0;
+        for (Expense expense : expenses) {
+            result += expense.getAmount();
+        }
+        return result;
+    }
+
     public List<Expense> getExpenses() {
         return expenses;
     }
 
-    public float getUserBalance(User user) {
+    @Exclude
+    float getUserBalance(User user) {
         float balance = 0f;
         for (Expense expense : expenses) {
             if (isUserPayer(user, expense)) {
@@ -36,6 +47,7 @@ public class ExpenseManager implements Serializable {
         return balance;
     }
 
+    @Exclude
     public int getUserPercentBalanceInExpensesTotalBalance(User user) {
         float groupTotalBalance = 0;
         float userTotalBalance = 0;
@@ -57,6 +69,7 @@ public class ExpenseManager implements Serializable {
 
     }
 
+    @Exclude
     List<Expense> getUserPayDebtExpenses(User mainUser, List<User> users) {
         List<Expense> debtExpenses = new ArrayList<>();
         for (User user : users) {
@@ -98,6 +111,7 @@ public class ExpenseManager implements Serializable {
         return false;
     }
 
+    @Exclude
     private float getUserToUserBalance(User user1, User user2) {
         float userToUserBalance = 0;
         for (Expense expense : expenses) {
