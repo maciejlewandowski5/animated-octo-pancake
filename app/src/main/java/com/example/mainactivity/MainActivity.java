@@ -37,6 +37,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 import model.Expense;
 import model.Group;
@@ -97,9 +99,14 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 Group group1 = new Group();
                 group.setId(documentSnapshot.getId());
-                group.setCode((String)documentSnapshot.get("code"));
-                group.setName((String)documentSnapshot.get("name"));
-                group.setNumberOfExpenses();
+                group.setCode(documentSnapshot.getString("code"));
+                group.setName(documentSnapshot.getString("name"));
+                group.setNumberOfExpenses(documentSnapshot.getLong("numberOfExpenses"));
+                group.setTotalBallance(documentSnapshot.getDouble("totalBallance"));
+                Set<String> usersIds  =((Map<String,Object>) documentSnapshot.getData().get("userBallance")).keySet();
+                for(String userId : usersIds) {
+                    group.addUser(new User(userId));
+                }
                 System.out.println();
             }
         });

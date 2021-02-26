@@ -48,7 +48,7 @@ public class Group implements Serializable {
     public List<Expense> getCurrentUserSuggestedPayDebtExpenses() {
         return expenseManager.getUserPayDebtExpenses(currentUser, users);
     }
-    public void setNumberOfExpenses(){
+    public void setNumberOfExpenses(Long numberOfExpenses){
 
     }
 
@@ -68,6 +68,11 @@ public class Group implements Serializable {
             }
             result.put(user.getId(), nested);
         }
+        Map<String, Object> nested = new HashMap<>();
+        for(User user : users){
+            nested.put(user.getId(),user.getName());
+        }
+        result.put("usersBallance",nested);
         return result;
     }
 
@@ -147,5 +152,8 @@ public class Group implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setTotalBallance(Double totalBallance) {
     }
 }
