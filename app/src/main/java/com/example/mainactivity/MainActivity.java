@@ -4,6 +4,7 @@ package com.example.mainactivity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -68,15 +69,15 @@ public class MainActivity extends AppCompatActivity {
         accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
             @Override
             public void signInSuccessful(FirebaseUser user) {
-               System.out.println("ZALOGOWANO");
+                System.out.println("ZALOGOWANO");
             }
         });
 
         accountHelper.signInUsingGoogle();
 
-        Group group = new Group("XASd","name",new User("ala"));
+        Group group = new Group("XASd", "name", new User("ala"));
         group.addUser(new User("Koń"));
-        group.getExpenseManager().addExpense(50f,"Wyjazd",group.getCurrentUser(), group.getUsers());
+        group.getExpenseManager().addExpense(50f, "Wyjazd", group.getCurrentUser(), group.getUsers());
 
         User user = new User("TOmasz");
 
@@ -97,20 +98,9 @@ public class MainActivity extends AppCompatActivity {
         db.collection("Main").document("Xov9e4ff9JWRDcTHuEsy").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Group group1 = new Group();
-                group.setId(documentSnapshot.getId());
-                group.setCode(documentSnapshot.getString("code"));
-                group.setName(documentSnapshot.getString("name"));
-                group.setNumberOfExpenses(documentSnapshot.getLong("numberOfExpenses"));
-                group.setTotalBallance(documentSnapshot.getDouble("totalBallance"));
-                Set<String> usersIds  =((Map<String,Object>) documentSnapshot.getData().get("userBallance")).keySet();
-                for(String userId : usersIds) {
-                    group.addUser(new User(userId));
-                }
-                System.out.println();
+                Group.fromDocumentSnapshot(documentSnapshot);
             }
         });
-
 
 
         LinearLayout container = findViewById(R.id.container);
@@ -134,7 +124,8 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<User> borrowers = new ArrayList<>();
             for (int j = 0; j < 4; j++) {
                 borrowers.add(new User(String.valueOf(i + j)));
-            } ;
+            }
+            ;
             expenses.add(new Expense((float) (i * 0.33 + 10), "Port", new User("Tomek"), new ArrayList<User>()));
         }
 
@@ -148,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     public void startPaymentsList(View view) {
         Intent intent = new Intent(this, PaymentsList.class);
         ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
@@ -160,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         MainActivity that = this;
         if (requestCode == accountHelper.getRCSGININCode()) {
-            accountHelper.verifySignInResults(TAG,data);
+            accountHelper.verifySignInResults(TAG, data);
         }
     }
 
@@ -173,10 +163,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                           // Log.d(TAG, "signInWithCredential:success");
+                            // Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            System.out.println("USERNAME:"  + mAuth.getCurrentUser().getDisplayName());
-                           // updateUI(user);
+                            System.out.println("USERNAME:" + mAuth.getCurrentUser().getDisplayName());
+                            // updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             //Log.w(TAG, "signInWithCredential:failure", task.getException());
