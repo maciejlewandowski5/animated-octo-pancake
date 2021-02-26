@@ -162,29 +162,7 @@ public class Group implements Serializable {
     //TODO::
     public void addUserDebt(float a) {
     }
-
-    public static Group fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {
-        Group group = new Group();
-        group.setId(documentSnapshot.getId());
-        group.setCode(documentSnapshot.getString("code"));
-        group.setName(documentSnapshot.getString("name"));
-        group.setNumberOfExpenses(documentSnapshot.getLong("numberOfExpenses"));
-        group.setTotalBallance(documentSnapshot.getDouble("totalBallance"));
-        Set<String> usersIds = ((Map<String, Object>) documentSnapshot.getData().get("userBallance")).keySet();
-        for (String userId : usersIds) {
-            group.addUser(new User(userId));
-        }
-        for (User user : group.getUsers()) {
-            if (documentSnapshot.contains(user.getId())) {
-                Map<String, Object> debtMap = ((Map<String, Object>) documentSnapshot.getData().get(user.getId()));
-
-                for (Map.Entry<String, Object> entry : debtMap.entrySet()) {
-                    group.setUserDebt(user,entry.getKey(),(float)entry.getValue());
-                }
-            }
-        }
-        return group;
-    }
+    
 
     public void setUserDebt(User user,String borrower,float a) {
     }
