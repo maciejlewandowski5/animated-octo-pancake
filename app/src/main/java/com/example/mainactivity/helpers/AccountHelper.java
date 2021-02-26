@@ -15,12 +15,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import model.User;
 
 public class AccountHelper {
     private FirebaseAuth firebaseAuth;
@@ -100,9 +105,18 @@ public class AccountHelper {
                     Utils.toastMessage("Firebase Authentication failed:" + task.getException(), activity);
                     if (user != null) {
                         if (signInSuccessful != null) {
+
+                            if(task.getResult().getAdditionalUserInfo().isNewUser()){
+                                User user1 = new User(user.getDisplayName());
+                                user1.setId(user.getUid());
+                                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                                db.collection("Users").document(user.getUid()).set(user1.toMap());
+                            }
+
                             signInSuccessful.signInSuccessful(user);//launchStartActivity(user);
                         }
                     }
+
                 } else {
                     Log.w(tag, "signInWithCredential:failure", task.getException());
                     Utils.toastMessage("Firebase Authentication failed:" + task.getException(), activity);

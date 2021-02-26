@@ -23,6 +23,7 @@ public class Group implements Serializable {
     private String code;
     private String name;
 
+
     public Group(String code, String name, User user) {
         this.users = new ArrayList<>();
         this.expenseManager = new ExpenseManager();
@@ -59,6 +60,7 @@ public class Group implements Serializable {
     public void setNumberOfExpenses(Long numberOfExpenses){
 
     }
+
 
     public Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();

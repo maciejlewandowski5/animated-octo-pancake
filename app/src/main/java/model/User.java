@@ -16,31 +16,40 @@ public class User implements Serializable {
     private String id;
     private String name;
     private ArrayList<Group> groups;
+    private String currentGroupId;
+    private String currentGroupName;
 
     public User(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
+        groups = new ArrayList<>();
     }
 
     public Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> nested = new HashMap<>();
-        nested.put(this.getCurrentGroup().getId(), this.getCurrentGroup().getName());
+        nested.put(this.getCurrentGroupId(), this.getCurrentGroupName());
         result.put("currentGroup", nested);
         Map<String, Object> nested2 = new HashMap<>();
         for (Group group : groups) {
-            if (!group.equals(getCurrentGroup())) {
+            if (!group.getId().equals(getCurrentGroupId())) {
                 nested2.put(group.getId(), getName());
             }
         }
         result.put("groups",nested2);
+        result.put("name",name);
         return result;
     }
 
-    //TODO::
-    private Group getCurrentGroup() {
-        return new Group("as", "ASd", new User("wrt"));
+
+    public String getCurrentGroupName(){
+    return currentGroupName;
     }
+
+    public String getCurrentGroupId(){
+        return currentGroupId;
+    }
+
 
     public String getId() {
         return id;
@@ -68,6 +77,8 @@ public class User implements Serializable {
     }
 
     public void setCurrentGroupData(Map.Entry<String, Object> string) {
+        currentGroupId = string.getKey();
+        currentGroupName = (String)string.getValue();
     }
 
     public void addGroupData(Map.Entry<String, Object> gn) {
@@ -86,4 +97,7 @@ public class User implements Serializable {
         return user1;
     }
 
+    public void setId(String uid) {
+        id = uid;
+    }
 }

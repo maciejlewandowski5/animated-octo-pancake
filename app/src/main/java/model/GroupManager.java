@@ -24,6 +24,11 @@ public class GroupManager implements Serializable {
     public void addGroup(DocumentSnapshot documentSnapshot){
         groups.add(GroupManager.fromDocumentSnapshot(documentSnapshot));
     }
+    public void addCurrentGroup(DocumentSnapshot documentSnapshot){
+        Group group = GroupManager.fromDocumentSnapshot(documentSnapshot);
+        currentGroup = group;
+        groups.add(group);
+    }
 
     private static Group fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {
         Group group = new Group();

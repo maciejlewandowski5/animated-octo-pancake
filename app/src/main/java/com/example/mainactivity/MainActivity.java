@@ -56,60 +56,46 @@ public class MainActivity extends AppCompatActivity {
     TextView historyTex;
 
     private FirebaseAuth mAuth;
-
     private AccountHelper accountHelper;
+
+    User currentUser;
+    Group currentGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        currentUser = new User("");
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
         accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
             @Override
             public void signInSuccessful(FirebaseUser user) {
-                System.out.println("ZALOGOWANO");
+                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.getData()!=null){
+                            currentUser = User.createUser(documentSnapshot);
+                            db.collection("Groups").document(currentUser.getCurrentGroupId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    if(documentSnapshot.getData()!=null){
+                                        GroupManager groupManager = GroupManager.getInstance();
+                                        groupManager.addCurrentGroup(documentSnapshot);
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
             }
         });
 
         accountHelper.signInUsingGoogle();
-
-        Group group = new Group("XASd", "name", new User("ala"));
-        group.addUser(new User("Koń"));
-        group.getExpenseManager().addExpense(50f, "Wyjazd", group.getCurrentUser(), group.getUsers());
-
-        User user = new User("TOmasz");
-
-        System.out.println("ROZPOCZĘTO ZAPISYWANIE");
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Main").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                System.out.println("ZAPISANO");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("NIEZAPISANO");
-            }
-        });
-
-        db.collection("Main").document("pRWKy6Zg6Efv7kqfT5IL").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.getData()!=null) {
-                    GroupManager.getInstance().addGroup(documentSnapshot);
-                }}
-        });
-
-        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.getData()!=null){
-                User user1 = User.createUser(documentSnapshot);}
-            }
-        });
 
 
         LinearLayout container = findViewById(R.id.container);
