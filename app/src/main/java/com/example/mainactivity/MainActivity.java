@@ -92,6 +92,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        db.collection("Main").document("Xov9e4ff9JWRDcTHuEsy").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Group group1 = new Group();
+                group.setId(documentSnapshot.getId());
+                group.setCode((String)documentSnapshot.get("code"));
+                group.setName((String)documentSnapshot.get("name"));
+                group.setNumberOfExpenses();
+                System.out.println();
+            }
+        });
+
 
 
         LinearLayout container = findViewById(R.id.container);

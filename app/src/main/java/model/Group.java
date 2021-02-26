@@ -48,6 +48,9 @@ public class Group implements Serializable {
     public List<Expense> getCurrentUserSuggestedPayDebtExpenses() {
         return expenseManager.getUserPayDebtExpenses(currentUser, users);
     }
+    public void setNumberOfExpenses(){
+
+    }
 
     public Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
@@ -78,6 +81,7 @@ public class Group implements Serializable {
         return 50;
     }
 
+    //TODO::
     public String getCode() {
         return code;
     }
