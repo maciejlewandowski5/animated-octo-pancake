@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         listenerIsSet = false;
         groupListnerSet = false;
         expenseListnerSet = false;
+        TopBar.RefreshCurrentGroup interf;
 
         groupLis = null;
         expenseLis = null;
@@ -110,6 +111,19 @@ public class MainActivity extends AppCompatActivity {
         }, ListElement::newInstance, this);
 
 
+        interf = new TopBar.RefreshCurrentGroup() {
+            @Override
+            public void refreshCurrentGroup(Map.Entry<String, String> group) {
+                groupLis.remove();
+                expenseLis.remove();
+                groupListnerSet = false;
+                expenseListnerSet = false;
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
+                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
+
+            }};
+
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
         accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
@@ -119,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         accountHelper.signInUsingGoogle();
+
+
     }
 
 
@@ -126,24 +142,10 @@ public class MainActivity extends AppCompatActivity {
 
         if(groupListnerSet== false) {
 
-            TopBar.RefreshCurrentGroup interf = new TopBar.RefreshCurrentGroup() {
-                @Override
-                public void refreshCurrentGroup(Map.Entry<String, String> group) {
-                    groupLis.remove();
-                    expenseLis.remove();
-                    groupListnerSet = false;
-                    expenseListnerSet = false;
-                    FirebaseFirestore db = FirebaseFirestore.getInstance();
-                    GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
-                    db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
-
-                }
-
-            };
             System.out.println("IAM HEEERE");
             GroupManager groupManager = GroupManager.getInstance();
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            
+            MainActivity that = this;
              groupLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -161,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         Fragment topBar = TopBar.newInstance(true);
-                        ((TopBar)topBar).setRefreshCurrentGroup(interf);
+                        ((TopBar)topBar).setRefreshCurrentGroup(that.interf);
                         fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                         fragmentTransaction.replace(id, topBar);
                         fragmentTransaction.commit();

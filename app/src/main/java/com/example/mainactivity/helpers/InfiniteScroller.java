@@ -59,6 +59,7 @@ public class InfiniteScroller<T extends Serializable> {
         for (T item : items) {
 
             FragmentTransaction transaction = app.getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
 
 
             /*if (i % 3 == 0) {
