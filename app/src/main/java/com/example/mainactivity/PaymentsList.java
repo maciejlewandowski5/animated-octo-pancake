@@ -35,12 +35,12 @@ public class PaymentsList extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), false);
+        Fragment topBar = TopBar.newInstance(false);
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 
 
-        group = new Group("XXAS","Lot",new User("Ola"));
+        group = new Group("XXAS","Lot",new User("Ola",""));
         debts = (ArrayList<Expense>) group.getCurrentUserSuggestedPayDebtExpenses();
         toPay = new ArrayList<>();
 

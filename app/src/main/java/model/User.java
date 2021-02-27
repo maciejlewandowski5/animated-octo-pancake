@@ -1,28 +1,42 @@
 package model;
 
 
-import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class User implements Serializable {
 
     private String id;
     private String name;
-    private ArrayList<Group> groups;
+    private Map<String,String> groups;
     private String currentGroupId;
     private String currentGroupName;
 
-    public User(String name) {
-        this.id = UUID.randomUUID().toString();
+    public User(String name,String id) {
+        this.id = id;
         this.name = name;
-        groups = new ArrayList<>();
+        groups = new HashMap<>();
+    }
+
+    public User(DocumentSnapshot documentSnapshot){
+        name = documentSnapshot.getString("name");
+        id = documentSnapshot.getId();
+        groups = (Map<String, String>) documentSnapshot.getData().get("groups");
+        Set<Map.Entry<String, Object>> currentGroup = ((Map<String,Object>)documentSnapshot.getData().get("currentGroup")).entrySet();
+        for(Map.Entry<String,Object> gn : currentGroup){
+            groups.put(gn.getKey(),(String) gn.getValue());
+            setCurrentGroupData(gn);
+        }
+
+
+    }
+
+    public void addGroup(String id, String name) {
+        groups.put(id,name);
     }
 
     public Map<String, Object> toMap() {
@@ -31,9 +45,9 @@ public class User implements Serializable {
         nested.put(this.getCurrentGroupId(), this.getCurrentGroupName());
         result.put("currentGroup", nested);
         Map<String, Object> nested2 = new HashMap<>();
-        for (Group group : groups) {
-            if (!group.getId().equals(getCurrentGroupId())) {
-                nested2.put(group.getId(), getName());
+        for (Map.Entry<String,String> group : groups.entrySet()) {
+            if (!group.getKey().equals(getCurrentGroupId())) {
+                nested2.put(group.getKey(), group.getValue());
             }
         }
         result.put("groups",nested2);
@@ -80,24 +94,22 @@ public class User implements Serializable {
         currentGroupId = string.getKey();
         currentGroupName = (String)string.getValue();
     }
+    public void setCurrentGroupData1(Map.Entry<String, String> string) {
+        currentGroupId = string.getKey();
+        currentGroupName = string.getValue();
+    }
 
     public void addGroupData(Map.Entry<String, Object> gn) {
+        groups.put(gn.getKey(),(String) gn.getValue());
     }
 
-    public static User createUser(DocumentSnapshot documentSnapshot) {
-        User user1 = new User(documentSnapshot.getString("name"));
-        Set<Map.Entry<String, Object>> currentGroup = ((Map<String,Object>)documentSnapshot.getData().get("currentGroup")).entrySet();
-        for(Map.Entry<String,Object> gn : currentGroup){
-            user1.setCurrentGroupData(gn);
-        }
-        Set<Map.Entry<String, Object>> groups = ((Map<String,Object>)documentSnapshot.getData().get("groups")).entrySet();
-        for(Map.Entry<String,Object> gn : groups){
-            user1.addGroupData(gn);
-        }
-        return user1;
-    }
+
 
     public void setId(String uid) {
         id = uid;
+    }
+
+    public Map<String,String> getGroups() {
+        return groups;
     }
 }

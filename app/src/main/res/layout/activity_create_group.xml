@@ -55,7 +55,7 @@
                 android:background="@drawable/background_button_simple"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="@string/group_name"
+                android:hint="@string/group_name"
                 android:textAlignment="center" />
         </LinearLayout>
 
@@ -66,26 +66,7 @@
             android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@+id/textView9">
 
-            <TextView
-                android:id="@+id/name"
-                style="@style/list_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_weight="1"
-                android:text="@string/your_name" />
 
-            <EditText
-                android:id="@+id/edit_name"
-                style="@style/on_bright"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/background_button_simple"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:text="@string/name"
-                android:textAlignment="center" />
         </LinearLayout>
 
     </LinearLayout>

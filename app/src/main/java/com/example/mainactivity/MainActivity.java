@@ -3,8 +3,10 @@ package com.example.mainactivity;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.media.MediaDrm;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -32,7 +34,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -48,6 +53,7 @@ import model.User;
 
 public class MainActivity extends AppCompatActivity {
     private static final String EXPENSE = "EXPENSE";
+    private static final String EMPTY = "EMPTY";
     private static final int RC_SIGN_IN = 10;
     private static final String TAG = "AS";
 
@@ -61,50 +67,39 @@ public class MainActivity extends AppCompatActivity {
     User currentUser;
     Group currentGroup;
 
+    InfiniteScroller<Expense> infiniteScroller;
+
+    boolean listenerIsSet;
+    boolean groupListnerSet;
+    boolean expenseListnerSet;
+
+    ListenerRegistration groupLis;
+    ListenerRegistration expenseLis;
+
+    int id=0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        currentUser = new User("");
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        accountHelper = new AccountHelper(this);
-        accountHelper.configureGoogleClient();
-        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
-            @Override
-            public void signInSuccessful(FirebaseUser user) {
-                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.getData()!=null){
-                            currentUser = User.createUser(documentSnapshot);
-                            db.collection("Groups").document(currentUser.getCurrentGroupId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                    if(documentSnapshot.getData()!=null){
-                                        GroupManager groupManager = GroupManager.getInstance();
-                                        groupManager.addCurrentGroup(documentSnapshot);
-                                    }
-                                }
-                            });
-
-                        }
-                    }
-                });
-            }
-        });
-
-        accountHelper.signInUsingGoogle();
 
 
         LinearLayout container = findViewById(R.id.container);
         floatButton = findViewById(R.id.floatingActionButton);
         history = findViewById(R.id.history_container);
         historyTex = findViewById(R.id.history);
+        listenerIsSet = false;
+        groupListnerSet = false;
+        expenseListnerSet = false;
 
+        groupLis = null;
+        expenseLis = null;
+        id = R.id.fragment;
+
+        currentUser = new User("","");
         MainActivity that = this;
-        InfiniteScroller<Expense> infiniteScroller = new InfiniteScroller<>(container, 11 + 11 + 2 + 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
+        infiniteScroller = new InfiniteScroller<>(container, 11 + 11 + 2 + 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
             @Override
             public void onClick(View view, Serializable object, int index) {
                 Intent intent = new Intent(that, ExpenseEditor.class);
@@ -114,23 +109,120 @@ public class MainActivity extends AppCompatActivity {
             }
         }, ListElement::newInstance, this);
 
-        ArrayList<Expense> expenses = new ArrayList<Expense>();
-        for (int i = 0; i < 10; i++) {
-            ArrayList<User> borrowers = new ArrayList<>();
-            for (int j = 0; j < 4; j++) {
-                borrowers.add(new User(String.valueOf(i + j)));
+
+        accountHelper = new AccountHelper(this);
+        accountHelper.configureGoogleClient();
+        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
+            @Override
+            public void signInSuccessful(FirebaseUser user) {
+                setUserListners();
             }
-            ;
-            expenses.add(new Expense((float) (i * 0.33 + 10), "Port", new User("Tomek"), new ArrayList<User>()));
+        });
+        accountHelper.signInUsingGoogle();
+    }
+
+
+    private void setGroupListener(){
+
+        if(groupListnerSet== false) {
+
+            TopBar.RefreshCurrentGroup interf = new TopBar.RefreshCurrentGroup() {
+                @Override
+                public void refreshCurrentGroup(Map.Entry<String, String> group) {
+                    groupLis.remove();
+                    expenseLis.remove();
+                    groupListnerSet = false;
+                    expenseListnerSet = false;
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
+                    db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
+
+                }
+
+            };
+            System.out.println("IAM HEEERE");
+            GroupManager groupManager = GroupManager.getInstance();
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            
+             groupLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                    if (error != null) {
+                        Log.w(TAG, "Listen failed.", error);
+                        return;
+                    }
+
+                    if (value != null && value.exists()) {
+                        groupManager.addCurrentGroup(value);
+                        groupManager.getCurrentGroup().setCurrentUser(currentUser);
+
+
+
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        Fragment topBar = TopBar.newInstance(true);
+                        ((TopBar)topBar).setRefreshCurrentGroup(interf);
+                        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                        fragmentTransaction.replace(id, topBar);
+                        fragmentTransaction.commit();
+                        setExpenseListner();
+                        id = topBar.getId();
+                    } else {
+                        Log.d(TAG, "Current data: null");
+                    }
+                }
+            });
+        groupListnerSet = true;
         }
+    }
 
-        infiniteScroller.populate(expenses);
+    private  void setExpenseListner(){
+           if(expenseListnerSet == false) {
+               GroupManager groupManager = GroupManager.getInstance();
+               FirebaseFirestore db = FirebaseFirestore.getInstance();
+               expenseLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).collection("Expenses").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                   @Override
+                   public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                       if (error != null) {
+                           Log.w(TAG, "Listen failed.", error);
+                           return;
+                       }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), true);
-        fragmentTransaction.replace(R.id.fragment, topBar);
-        fragmentTransaction.commit();
+                       ArrayList<Expense> expenses = new ArrayList<>();
+                       for (DocumentSnapshot ds : value.getDocuments()) {
+                           expenses.add(new Expense(ds));
+                       }
+                       groupManager.getCurrentGroup().getExpenseManager().setExpenses(expenses);
+                       infiniteScroller.populate((ArrayList<Expense>) groupManager.getCurrentGroup().getExpenseManager().getExpenses());
+                   }
+               });
+            expenseListnerSet = true;
+           }
+    }
+
+    private void setUserListners() {
+
+        GroupManager groupManager = GroupManager.getInstance();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.w(TAG, "Listen failed.", error);
+                            return;
+                        }
+
+                        if (value != null && value.exists()) {
+                            currentUser = new User(value);
+                            System.out.println("FIREDDDDDDDDDDDDDDDDDDDDDDD");
+                            setGroupListener();
+                        } else {
+                            Log.d(TAG, "Current data: null");
+                        }
+                    }
+                });
     }
 
 
@@ -149,33 +241,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void firebaseAuthWithGoogle(String idToken) {
-        System.out.println("Auth in");
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            // Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            System.out.println("USERNAME:" + mAuth.getCurrentUser().getDisplayName());
-                            // updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            //Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            System.out.println("asd");
-                            //updateUI(null);
-                        }
-                        System.out.println("Sign in comnplete");
-                        // ...
-                    }
-                }).addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("Sign in falure");
-            }
-        });
+
+
+    public void addExpense(View view) {
+        Intent intent = new Intent(this, ExpenseEditor.class);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
+        intent.putExtra(EMPTY, "");
+        startActivity(intent, options.toBundle());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+
+        }
     }
 }

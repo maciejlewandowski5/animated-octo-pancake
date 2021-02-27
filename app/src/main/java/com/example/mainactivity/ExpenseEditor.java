@@ -1,6 +1,9 @@
 package com.example.mainactivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -18,6 +21,10 @@ import android.widget.TextView;
 
 import com.example.mainactivity.helpers.DecimalDigitsInputFilter;
 import com.example.mainactivity.helpers.Utils;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -26,12 +33,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import model.Expense;
 import model.Group;
 import model.GroupManager;
 import model.User;
 
 public class ExpenseEditor extends AppCompatActivity {
-
+    private static final String EXPENSE = "EXPENSE";
+    private static final String EMPTY = "EMPTY";
     static final int DATE_DIALOG_ID = 0;
     private static TextView editDate;
     private static Calendar calendar;
@@ -43,6 +52,7 @@ public class ExpenseEditor extends AppCompatActivity {
     ArrayList<User> borrowers;
     User payer;
     Group group;
+    Expense expense;
 
     public static void setTime(int hour, int minute) {
         calendar.set(Calendar.HOUR, hour);
@@ -67,14 +77,20 @@ public class ExpenseEditor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_expense_editor);
 
+        Intent intent = getIntent();
+
+        expense = (Expense) intent.getSerializableExtra(EXPENSE);
+
+
+        group = GroupManager.getInstance().getCurrentGroup();
+
         borrowers = new ArrayList<>();
-        group = new Group("XXXX","Żagle",new User("Ala"));
-        payer = new User("Payer");
+
         calendar = Calendar.getInstance();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(GroupManager.getInstance(), false);
+        Fragment topBar = TopBar.newInstance(false);
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 
@@ -83,18 +99,36 @@ public class ExpenseEditor extends AppCompatActivity {
         container = findViewById(R.id.container);
         editDate = findViewById(R.id.editTextDate);
         popupMenu = new PopupMenu(this, addBorrower);
-        TextView payer = findViewById(R.id.textView7);
+        TextView payers = findViewById(R.id.textView7);
         amount = findViewById(R.id.editTextNumber);
         seekBar = findViewById(R.id.seekBar);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
-        DecimalFormat format = new DecimalFormat("#.##");
-        editDate.setText(simpleDateFormat.format(new Date()));
-        payer.setText(group.getCurrentUser().getName());
-        seekBar.setMax(Float.valueOf(group.getMaxAmount() * 100).intValue());
-        seekBar.setProgress(Float.valueOf(group.getMeanAmount() * 100).intValue());
-        amount.setFilters(new InputFilter[]{new DecimalDigitsInputFilter(12, 2)});
-        amount.setText(format.format(group.getMeanAmount()));
+
+        if(expense==null){
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
+            DecimalFormat format = new DecimalFormat("#.##");
+            editDate.setText(simpleDateFormat.format(new Date()));
+            payers.setText(group.getCurrentUser().getName());
+            payer = group.getCurrentUser();
+            seekBar.setMax(Float.valueOf(group.getMaxAmount() * 100).intValue());
+            seekBar.setProgress(Float.valueOf(group.getMeanAmount() * 100).intValue());
+            amount.setFilters(new InputFilter[]{new DecimalDigitsInputFilter(12, 2)});
+            amount.setText(format.format(group.getMeanAmount()));
+
+        }else{
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
+            DecimalFormat format = new DecimalFormat("#.##");
+            editDate.setText(simpleDateFormat.format(expense.getDateTime()));
+            payers.setText(expense.getPayer().getName());
+            ((TextView)findViewById(R.id.editTextTextPersonName)).setText(expense.getName());
+            payer = expense.getPayer();
+            borrowers.addAll(expense.getBorrowers());
+            refreshDisplayedBorrowers(borrowers);
+            seekBar.setMax(Float.valueOf(group.getMaxAmount() * 100).intValue());
+            seekBar.setProgress(Float.valueOf(expense.getAmount() * 100).intValue());
+            amount.setFilters(new InputFilter[]{new DecimalDigitsInputFilter(12, 2)});
+            amount.setText(format.format(expense.getAmount()));
+        }
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -227,7 +261,40 @@ public class ExpenseEditor extends AppCompatActivity {
         newFragment.show(getSupportFragmentManager(), "datePicker");
     }
 
-    public void addExpense(View view) {
-        //TODO:: Implement it
+    public void sendExpense(View view) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+       // float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
+        String name = ((TextView) findViewById(R.id.editTextTextPersonName)).getText().toString();
+        Expense expense1 = new Expense(15, name, payer, borrowers);
+
+        if(expense==null) {
+
+            db.collection("Groups").document(group.getId()).collection("Expenses").add(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    System.out.println(documentReference.getId());
+                    onBackPressed();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+
+                }
+            });
+        }
+        else{
+            db.collection("Groups").document(group.getId()).collection("Expenses").document(expense.getId()).update(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    onBackPressed();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+
+                }
+            });
+        }
+        onBackPressed();
     }
 }

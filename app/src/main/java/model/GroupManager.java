@@ -19,7 +19,8 @@ public class GroupManager implements Serializable {
     }
 
     public void addGroup(String code, String name, User user){
-        groups.add(new Group(code, name, user));
+        Group group = new Group(code, name, user);
+        groups.add(group);
     }
     public void addGroup(DocumentSnapshot documentSnapshot){
         groups.add(GroupManager.fromDocumentSnapshot(documentSnapshot));
@@ -30,6 +31,7 @@ public class GroupManager implements Serializable {
         groups.add(group);
     }
 
+
     private static Group fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {
         Group group = new Group();
         group.setId(documentSnapshot.getId());
@@ -37,17 +39,22 @@ public class GroupManager implements Serializable {
         group.setName(documentSnapshot.getString("name"));
         group.setNumberOfExpenses(documentSnapshot.getLong("numberOfExpenses"));
         group.setTotalBallance(documentSnapshot.getDouble("totalBallance"));
-        Set<String> usersIds = ((Map<String, Object>) documentSnapshot.getData().get("usersBallance")).keySet();
-        for (String userId : usersIds) {
-            group.addUser(new User(userId));
+        documentSnapshot.getData().get("users");
+       Set<Map.Entry<String,Object>> usersIds = ((Map<String, Object>) documentSnapshot.getData().get("users")).entrySet();
+        for (Map.Entry<String,Object> user : usersIds) {
+            group.addUser(new User((String)user.getValue(),user.getKey()));
         }
         for (User user : group.getUsers()) {
             if (documentSnapshot.contains(user.getId())) {
                 Map<String, Object> debtMap = ((Map<String, Object>) documentSnapshot.getData().get(user.getId()));
 
                 for (Map.Entry<String, Object> entry : debtMap.entrySet()) {
-                    group.setUserDebt(user,entry.getKey(),(float)entry.getValue());
-                }
+                    try {
+                        group.setUserDebt(user, entry.getKey(), ((Double) entry.getValue()).floatValue());
+                    }catch (ClassCastException e){
+                        group.setUserDebt(user, entry.getKey(), ((Long) entry.getValue()).floatValue());
+                    }
+                    }
             }
         }
         return group;
@@ -66,9 +73,6 @@ public class GroupManager implements Serializable {
 
     public Group getCurrentGroup(){
 
-        if(currentGroup == null){
-            return groups.get(0);
-        }
         return currentGroup;
     }
 

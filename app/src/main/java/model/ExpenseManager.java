@@ -14,6 +14,10 @@ public class ExpenseManager implements Serializable {
         this.expenses = new ArrayList<>();
     }
 
+    public void setExpenses(List<Expense> expenses) {
+        this.expenses = expenses;
+    }
+
     public void addExpense(Expense expense) {
         expenses.add(expense);
     }

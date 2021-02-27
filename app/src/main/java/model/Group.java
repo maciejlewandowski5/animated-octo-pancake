@@ -39,7 +39,7 @@ public class Group implements Serializable {
         this.id ="";
         this.code = "";
         this.name = "";
-        currentUser = new User("");
+        currentUser = new User("","");
     }
 
 
@@ -83,6 +83,11 @@ public class Group implements Serializable {
             nested.put(user.getId(),user.getName());
         }
         result.put("usersBallance",nested);
+        Map<String, Object> nested2 = new HashMap<>();
+        for(User user : this.users){
+            nested2.put(user.getId(),user.getName());
+        }
+        result.put("users",nested2);
         return result;
     }
 
@@ -166,6 +171,8 @@ public class Group implements Serializable {
 
     public void setTotalBallance(Double totalBallance) {
     }
+
+
 
     //TODO::
     public void addUserDebt(float a) {

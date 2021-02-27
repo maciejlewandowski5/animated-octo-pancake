@@ -53,7 +53,7 @@ public class InfiniteScroller<T extends Serializable> {
         container.startAnimation(anim);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+
     private void populateWithItems(){
         int i = 0;
         for (T item : items) {
@@ -94,9 +94,6 @@ public class InfiniteScroller<T extends Serializable> {
             });
 
             constraintLayout.addView(button);
-
-
-
             transaction.add(constraintLayout.getId(), fragment, String.valueOf(item.hashCode()));
             i++;
             transaction.commit();

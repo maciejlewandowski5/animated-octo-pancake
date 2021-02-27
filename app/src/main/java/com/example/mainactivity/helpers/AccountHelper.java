@@ -107,7 +107,7 @@ public class AccountHelper {
                         if (signInSuccessful != null) {
 
                             if(task.getResult().getAdditionalUserInfo().isNewUser()){
-                                User user1 = new User(user.getDisplayName());
+                                User user1 = new User(user.getUid(),user.getDisplayName());
                                 user1.setId(user.getUid());
                                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                                 db.collection("Users").document(user.getUid()).set(user1.toMap());
