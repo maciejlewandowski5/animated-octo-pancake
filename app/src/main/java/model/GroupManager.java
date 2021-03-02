@@ -30,6 +30,10 @@ public class GroupManager implements Serializable {
         currentGroup = group;
         groups.add(group);
     }
+    public void clearGroups(){
+        groups = new ArrayList<>();
+        currentGroup = null;
+    }
 
 
     private static Group fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {

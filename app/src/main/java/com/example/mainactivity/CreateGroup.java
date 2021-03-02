@@ -33,19 +33,23 @@ public class CreateGroup extends AppCompatActivity {
 
             GroupManager.getInstance().addGroup("code", textView.getText().toString(), GroupManager.getInstance().getCurrentGroup().getCurrentUser());
             Group group = GroupManager.getInstance().getGroups().get(GroupManager.getInstance().getGroups().size() - 1);
-
+            group.addUser(GroupManager.getInstance().getCurrentGroup().getCurrentUser());
             db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                 @Override
                 public void onSuccess(DocumentReference documentReference) {
                     group.setId(documentReference.getId());
                     Map<String, Object> a = new HashMap<>();
                     a.put(documentReference.getId(), group.getName());
+
+                    Map.Entry<String,Object> c = null;
                     for(Map.Entry<String,Object> b : a.entrySet()){
                         GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData(b);
+                    c = b;
                     }
                     GroupManager.getInstance().getCurrentGroup().getCurrentUser().addGroup(documentReference.getId(),group.getName());
 
                     db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
+                    MainActivity.refreshCurrentGroup(c);
                     onBackPressed();
                 }
             });

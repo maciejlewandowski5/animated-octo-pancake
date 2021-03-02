@@ -80,7 +80,7 @@ public class Group implements Serializable {
         }
         Map<String, Object> nested = new HashMap<>();
         for(User user : users){
-            nested.put(user.getId(),user.getName());
+            nested.put(user.getId(),getUserBallance(user));
         }
         result.put("usersBallance",nested);
         Map<String, Object> nested2 = new HashMap<>();
@@ -89,6 +89,10 @@ public class Group implements Serializable {
         }
         result.put("users",nested2);
         return result;
+    }
+    public float getUserBallance(User user){
+        //TODO::
+        return 0.0f;
     }
 
     //TODO::

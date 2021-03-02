@@ -40,6 +40,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Source;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     ListenerRegistration groupLis;
     ListenerRegistration expenseLis;
+    private static TopBar.RefreshCurrentGroup interf;;
 
     int id=0;
 
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         listenerIsSet = false;
         groupListnerSet = false;
         expenseListnerSet = false;
-        TopBar.RefreshCurrentGroup interf;
 
         groupLis = null;
         expenseLis = null;
@@ -119,9 +120,11 @@ public class MainActivity extends AppCompatActivity {
                 groupListnerSet = false;
                 expenseListnerSet = false;
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
-                GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
-                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
-
+               // GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
+                System.out.println("GROUP  :  "  + group.getKey());
+                currentUser.setCurrentGroupData1(group);
+                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(currentUser.toMap());
+                setListeners();
             }};
 
         accountHelper = new AccountHelper(this);
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
             @Override
             public void signInSuccessful(FirebaseUser user) {
-                setUserListners();
+                setListeners();
             }
         });
         accountHelper.signInUsingGoogle();
@@ -137,15 +140,37 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public static void refreshCurrentGroup(Map.Entry<String, Object> group){
+        Map.Entry<String,String> n = new Map.Entry<String, String>() {
+            @Override
+            public String getKey() {
+                return group.getKey();
+            }
+
+            @Override
+            public String getValue() {
+                return (String) group.getValue();
+            }
+
+            @Override
+            public String setValue(String value) {
+                return null;
+            }
+        };
+        interf.refreshCurrentGroup(n);
+    }
+
 
     private void setGroupListener(){
 
         if(groupListnerSet== false) {
 
-            System.out.println("IAM HEEERE");
+
             GroupManager groupManager = GroupManager.getInstance();
+            groupManager.clearGroups();
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             MainActivity that = this;
+
              groupLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -157,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     if (value != null && value.exists()) {
                         groupManager.addCurrentGroup(value);
                         groupManager.getCurrentGroup().setCurrentUser(currentUser);
+                        System.out.println("FINAL CURRENT GROUP" +  groupManager.getCurrentGroup().getId());
 
 
 
@@ -202,9 +228,23 @@ public class MainActivity extends AppCompatActivity {
            }
     }
 
-    private void setUserListners() {
+    private void setListeners(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .get(Source.SERVER).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot != null && documentSnapshot.exists()) {
 
-        GroupManager groupManager = GroupManager.getInstance();
+                    currentUser = new User(documentSnapshot);
+                    System.out.println("Current user group:  "+currentUser.getCurrentGroupId());
+                    setGroupListener();
+                }
+            }
+        });
+    }
+
+    private void setUserListners() {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).
@@ -218,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (value != null && value.exists()) {
                             currentUser = new User(value);
-                            System.out.println("FIREDDDDDDDDDDDDDDDDDDDDDDD");
+                            System.out.println("Current user group:  "+currentUser.getCurrentGroupId());
                             setGroupListener();
                         } else {
                             Log.d(TAG, "Current data: null");

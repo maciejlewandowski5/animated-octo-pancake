@@ -88,6 +88,7 @@ public class TopBar extends Fragment {
                     if (!group.getKey().equals(groupManager.getCurrentGroup().getId())) {
                         popupMenu.getMenu().add(group.getValue());
                     }
+                    System.out.println("Current group id: " + groupManager.getCurrentGroup().getId());
                 }
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
