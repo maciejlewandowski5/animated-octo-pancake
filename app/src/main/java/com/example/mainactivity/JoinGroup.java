@@ -72,9 +72,9 @@ public class JoinGroup extends AppCompatActivity {
 
                                 c = new HashMap<>();
                                 for (Map.Entry<String, Object> b : a.entrySet()) {
-                                    if (!b.getKey().equals(GroupManager.getInstance().getCurrentGroup().getCurrentUser().getId())) {
+                                    //if (!b.getKey().equals(GroupManager.getInstance().getCurrentGroup().getCurrentUser().getId())) {
                                         c.put(b.getKey(), 0.0);
-                                    }
+                                   // }
                                 }
                                 ds.getReference().update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().getId(), c);
                             }

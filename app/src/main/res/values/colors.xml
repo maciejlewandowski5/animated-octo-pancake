@@ -9,6 +9,7 @@
     <color name="bright_grey">#FFC4C4C4</color>
     <color name="dirty_white">#EEEEEEEE</color>
     <color name="teal">#FF00ADB5</color>
+    <color name="teal_transparent" >#5500ADB5</color>
     <color name="green">#FF00B574</color>
     <color name="red">#FFB46464</color>
 

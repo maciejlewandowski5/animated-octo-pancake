@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -24,7 +25,11 @@ import com.example.mainactivity.helpers.Utils;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import model.Expense;
 import model.Group;
@@ -146,6 +152,7 @@ public class ExpenseEditor extends AppCompatActivity {
 
             }
         });
+
 
     }
 
@@ -263,17 +270,23 @@ public class ExpenseEditor extends AppCompatActivity {
 
     public void sendExpense(View view) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-       // float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
+        float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
         String name = ((TextView) findViewById(R.id.editTextTextPersonName)).getText().toString();
-        Expense expense1 = new Expense(15, name, payer, borrowers);
+        Expense expense1 = new Expense(price, name, payer, borrowers);
 
         if(expense==null) {
 
             db.collection("Groups").document(group.getId()).collection("Expenses").add(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                 @Override
                 public void onSuccess(DocumentReference documentReference) {
-                    System.out.println(documentReference.getId());
-                    onBackPressed();
+                    for(User borrower :expense1.getBorrowers()) {
+                        db.collection("Groups").document(group.getId()).update(expense1.getPayer().getId() + "." + borrower.getId(), FieldValue.increment(expense1.getAmount()/(float)borrowers.size())).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                System.out.println("DDDDone");
+                            }
+                        });
+                    }onBackPressed();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -286,6 +299,7 @@ public class ExpenseEditor extends AppCompatActivity {
             db.collection("Groups").document(group.getId()).collection("Expenses").document(expense.getId()).update(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
+
                     onBackPressed();
                 }
             }).addOnFailureListener(new OnFailureListener() {

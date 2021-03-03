@@ -44,6 +44,7 @@ public class CreateGroup extends AppCompatActivity {
                     Map.Entry<String,Object> c = null;
                     for(Map.Entry<String,Object> b : a.entrySet()){
                         GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData(b);
+
                     c = b;
                     }
                     GroupManager.getInstance().getCurrentGroup().getCurrentUser().addGroup(documentReference.getId(),group.getName());

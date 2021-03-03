@@ -30,5 +30,7 @@
     <string name="group_name">Group name</string>
     <string name="you_logged_in">You logged in</string>
     <string name="login_failed">Login failed</string>
+    <string name="payback">Pay-back</string>
+    <string name="to">to</string>
 
 </resources>

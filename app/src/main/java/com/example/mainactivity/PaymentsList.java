@@ -1,21 +1,31 @@
 package com.example.mainactivity;
 
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.example.mainactivity.helpers.InfiniteScroller;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import model.DebtManager;
 import model.Expense;
 import model.Group;
 import model.GroupManager;
@@ -23,6 +33,7 @@ import model.User;
 
 public class PaymentsList extends AppCompatActivity {
 
+    private static final String TAG ="s" ;
     Group group;
     ArrayList<Expense> debts;
     ArrayList<Expense> toPay;
@@ -40,7 +51,7 @@ public class PaymentsList extends AppCompatActivity {
         fragmentTransaction.commit();
 
 
-        group = new Group("XXAS","Lot",new User("Ola",""));
+        group = GroupManager.getInstance().getCurrentGroup();
         debts = (ArrayList<Expense>) group.getCurrentUserSuggestedPayDebtExpenses();
         toPay = new ArrayList<>();
 
@@ -61,9 +72,12 @@ public class PaymentsList extends AppCompatActivity {
 
                 checkBox.setChecked(!checkBox.isChecked());
                 if (checkBox.isChecked()) {
-                    if (expense.getAmount() < 0) {
+                    if (expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                         constraintLayout.setBackgroundColor(getColor(R.color.accent_secondary_transparent));
-                    } else if (expense.getAmount() > 0) {
+                    } else if(expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                        constraintLayout.setBackgroundColor(getColor(R.color.accent_transparent));
+                    }
+                    else {
                         constraintLayout.setBackgroundColor(getColor(R.color.accent_variant_transparent));
                     }
                     toPay.add(expense);
@@ -77,6 +91,29 @@ public class PaymentsList extends AppCompatActivity {
         }, PaymentListElement::newInstance, this);
 
 
+        FirebaseFirestore db =FirebaseFirestore.getInstance();
+        PaymentsList that = this;
+        db.collection("Groups").document(group.getId()).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+
+                if (value != null && value.exists()) {
+                    DebtManager debtManager = new DebtManager(value);
+                    debtManager.simplifyDebts();
+                    debts = debtManager.getExpenses(that);
+                    infiniteScroller.populate(debts);
+                    System.out.println("DEBTS\n" + debtManager.toString());
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+
+
+            }
+        });
     }
 
     public void evenChecked(View view) {
@@ -86,6 +123,6 @@ public class PaymentsList extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        infiniteScroller.populate(debts);
+
     }
 }

@@ -10,6 +10,8 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
@@ -44,14 +46,17 @@ public class PaymentListElement extends Fragment {
         }
     }
 
-    private void expenseFormatter(TextView amount, TextView userName,ImageView circle) {
+    private void expenseFormatter(TextView amount, TextView userName,ImageView circle, TextView borrowerName) {
         DecimalFormat format = new DecimalFormat("#.##");
         amount.setText(format.format(expense.getAmount()));
         userName.setText(expense.getPayer().getName());
-        if(expense.getAmount()<0) {
+        borrowerName.setText(expense.getBorrowers().get(0).getName());
+        if(expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
             circle.setImageResource(R.drawable.circle_red);
-        }else if (expense.getAmount()>0){
+        }else if(expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+            circle.setImageResource(R.drawable.cricle_teal);
 
+        }else{
             circle.setImageResource(R.drawable.cricle_green);
         }
     }
@@ -65,8 +70,9 @@ public class PaymentListElement extends Fragment {
             TextView amount = root.findViewById(R.id.amount);
             TextView userName = root.findViewById(R.id.user_name);
             ImageView circle = root.findViewById(R.id.circle);
+            TextView borrower = root.findViewById(R.id.to);
 
-            expenseFormatter(amount, userName,circle);
+            expenseFormatter(amount, userName,circle,borrower);
 
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
