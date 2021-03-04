@@ -283,7 +283,7 @@ public class ExpenseEditor extends AppCompatActivity {
                         db.collection("Groups").document(group.getId()).update(expense1.getPayer().getId() + "." + borrower.getId(), FieldValue.increment(expense1.getAmount()/(float)borrowers.size())).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                System.out.println("DDDDone");
+                                ;
                             }
                         });
                     }onBackPressed();
@@ -299,7 +299,7 @@ public class ExpenseEditor extends AppCompatActivity {
             db.collection("Groups").document(group.getId()).collection("Expenses").document(expense.getId()).update(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-
+                    //TODO:: fix group fileds when user moddifes expense
                     onBackPressed();
                 }
             }).addOnFailureListener(new OnFailureListener() {

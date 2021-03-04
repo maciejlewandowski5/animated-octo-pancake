@@ -46,7 +46,7 @@ public class Debt {
         }
     }
 
-    private static ArrayList<Debt> mergeDebts(Debt debt1, Debt debt2) throws InstantiationException {
+    public static ArrayList<Debt> mergeDebts(Debt debt1, Debt debt2) throws InstantiationException {
         ArrayList<Debt> result = new ArrayList<>();
         Debt tmp1 = null;
         Debt tmp2 = null;
@@ -66,10 +66,10 @@ public class Debt {
         }
         else {
             if (debt1.amount > debt2.amount) {
-                 tmp1 = new Debt(debt1.from, debt2.to, debt2.amount);
+                 tmp1 = new Debt(debt2.from, debt1.to, debt2.amount);
                  tmp2 = new Debt(debt1.from, debt1.to, debt1.amount - debt2.amount);
             } else if (debt1.amount <= debt2.amount) {
-                 tmp1 = new Debt(debt2.from, debt1.to, debt1.amount);
+                 tmp1 = new Debt(debt1.from, debt2.to, debt1.amount);
                  tmp2 = new Debt(debt2.from, debt2.to, debt2.amount - debt1.amount);
             }
 

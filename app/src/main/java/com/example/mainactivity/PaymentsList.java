@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,9 +15,12 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.example.mainactivity.helpers.InfiniteScroller;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
@@ -24,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import model.DebtManager;
 import model.Expense;
@@ -33,12 +38,13 @@ import model.User;
 
 public class PaymentsList extends AppCompatActivity {
 
-    private static final String TAG ="s" ;
+    private static final String TAG = "s";
     Group group;
     ArrayList<Expense> debts;
     ArrayList<Expense> toPay;
 
     InfiniteScroller<Expense> infiniteScroller;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,14 +80,13 @@ public class PaymentsList extends AppCompatActivity {
                 if (checkBox.isChecked()) {
                     if (expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                         constraintLayout.setBackgroundColor(getColor(R.color.accent_secondary_transparent));
-                    } else if(expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                    } else if (expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                         constraintLayout.setBackgroundColor(getColor(R.color.accent_transparent));
-                    }
-                    else {
+                    } else {
                         constraintLayout.setBackgroundColor(getColor(R.color.accent_variant_transparent));
                     }
                     toPay.add(expense);
-                }else{
+                } else {
                     constraintLayout.setBackgroundColor(getColor(R.color.transparent));
                     toPay.remove(expense);
                 }
@@ -91,7 +96,7 @@ public class PaymentsList extends AppCompatActivity {
         }, PaymentListElement::newInstance, this);
 
 
-        FirebaseFirestore db =FirebaseFirestore.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         PaymentsList that = this;
         db.collection("Groups").document(group.getId()).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
             @Override
@@ -104,9 +109,10 @@ public class PaymentsList extends AppCompatActivity {
                 if (value != null && value.exists()) {
                     DebtManager debtManager = new DebtManager(value);
                     debtManager.simplifyDebts();
+                    // debtManager.reduceDebts();
                     debts = debtManager.getExpenses(that);
                     infiniteScroller.populate(debts);
-                    System.out.println("DEBTS\n" + debtManager.toString());
+
                 } else {
                     Log.d(TAG, "Current data: null");
                 }
@@ -117,7 +123,22 @@ public class PaymentsList extends AppCompatActivity {
     }
 
     public void evenChecked(View view) {
-        //TODO:: update in firestore toPay
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        for(Expense expense:toPay) {
+            db.collection("Groups").document(group.getId()).collection("Expenses").add(expense.toMap())
+            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    db.collection("Groups").document(group.getId())
+                            .update(expense.getPayer().getId() + "." + expense.getBorrowers().get(0).getId(), FieldValue.increment(expense.getAmount()));
+                }
+            });
+        }
+        onBackPressed();
+        //toPay.forEach(item ->
+          //      db.collection("Groups")
+            //            .document(group.getId()).collection("Expenses").add(item));
+
     }
 
     @Override
