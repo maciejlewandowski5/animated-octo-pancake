@@ -91,6 +91,8 @@ public class Expense implements Serializable {
         return borrowers.size();
     }
 
+
+
     @Override
     public String toString() {
         return "Expense{" +

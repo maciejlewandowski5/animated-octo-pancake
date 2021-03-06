@@ -12,8 +12,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import org.apache.commons.lang3.RandomStringUtils;
+
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import model.Group;
@@ -22,6 +25,7 @@ import model.GroupManager;
 public class CreateGroup extends AppCompatActivity {
     private TextView textView;
     private String code;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
