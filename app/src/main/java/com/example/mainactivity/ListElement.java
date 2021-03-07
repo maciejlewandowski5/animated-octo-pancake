@@ -21,7 +21,7 @@ public class ListElement extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
 
-    private Expense expense;
+    private modelv2.Expense expense;
 
     public ListElement() {
         // Required empty public constructor
@@ -40,7 +40,7 @@ public class ListElement extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            expense = (Expense) getArguments().getSerializable(ARG_PARAM1);
+            expense = (modelv2.Expense) getArguments().getSerializable(ARG_PARAM1);
         }
     }
 

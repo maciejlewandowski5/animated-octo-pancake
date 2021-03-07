@@ -67,6 +67,7 @@ public class Expense implements Serializable {
         return id;
     }
 
+
     public User getPayer() {
         return payer;
     }

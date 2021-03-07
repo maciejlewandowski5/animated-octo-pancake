@@ -3,8 +3,10 @@ package modelv2;
 import android.graphics.Point;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -73,6 +75,21 @@ public class UserSession {
 
     }
 
+    public static UserSession getInstance() {
+        if (currentSession == null) {
+            currentSession = new UserSession();
+        }
+        return currentSession;
+    }
+
+    public ShallowGroup getCurrentShallowGroup() {
+        return currentShallowGroup;
+    }
+
+    public ArrayList<ShallowGroup> getGroups() {
+        return groups;
+    }
+
     private void setGroupListener() {
         if (!groupListenerSet) {
             db = FirebaseFirestore.getInstance();
@@ -124,21 +141,23 @@ public class UserSession {
         }
     }
 
-    public static UserSession getInstance() {
-        if (currentSession == null) {
-            currentSession = new UserSession();
-        }
-        return currentSession;
-    }
 
-    public void changeCurrentGroup(String groupId) {
-        if (groups.contains(groupId)) {
+
+    public void changeCurrentGroup(ShallowGroup shallowGroup) {
+        if (groups.contains(shallowGroup)) {
             this.removeGroupListener();
             this.removeExpenseListener();
-            currentShallowGroup = groups.get(groups.indexOf(groupId));
+            ShallowGroup tmp = currentShallowGroup;
+            currentShallowGroup = groups.get(groups.indexOf(shallowGroup));
             groups.remove(currentShallowGroup);
-            db.collection("Users").document(currentUser.getId()).update(this.toMap());
-            setGroupListener();
+            groups.add(tmp);
+            db.collection("Users").document(currentUser.getId()).update(this.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    setGroupListener();
+                }
+            });
+
         }
     }
 
@@ -148,8 +167,9 @@ public class UserSession {
         db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                groups.add(new ShallowGroup(name, documentReference.getId()));
-                changeCurrentGroup(documentReference.getId());
+                ShallowGroup shallowGroup = new ShallowGroup(name, documentReference.getId());
+                groups.add(shallowGroup);
+                changeCurrentGroup(shallowGroup);
             }
         });
     }
@@ -160,8 +180,9 @@ public class UserSession {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
                     if (documentSnapshot != null && documentSnapshot.exists()) {
-                        groups.add(new ShallowGroup(documentSnapshot.getString("name"), documentSnapshot.getId()));
-                        changeCurrentGroup(documentSnapshot.getId());
+                        ShallowGroup shallowGroup = new ShallowGroup(documentSnapshot.getString("name"), documentSnapshot.getId());
+                        groups.add(shallowGroup);
+                        changeCurrentGroup(shallowGroup);
                         Group group = new Group(documentSnapshot);
                         group.addUser(currentUser);
                         documentSnapshot.getReference().update(group.toMap());

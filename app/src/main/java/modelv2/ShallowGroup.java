@@ -1,5 +1,7 @@
 package modelv2;
 
+import androidx.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +21,19 @@ public class ShallowGroup {
             groupName = (String) v;
         });
 
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        try {
+            return this.groupId.equals(((Group) obj).getId());
+        } catch (ClassCastException e) {
+            try {
+                return this.groupId.equals(((ShallowGroup) obj).getGroupId());
+            } catch (ClassCastException f) {
+                return false;
+            }
+        }
     }
 
     public String getGroupId() {

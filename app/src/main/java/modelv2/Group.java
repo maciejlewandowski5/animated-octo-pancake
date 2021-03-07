@@ -37,10 +37,11 @@ public class Group {
 
             payers.forEach((payer) -> {
                 ((Map<String, Object>) value.getData().get(payer.getId())).entrySet().forEach((borrower) -> {
+                    User tmp = new User(borrower.getKey(),borrower.getKey());
                     try {
-                        payer.addBorrower(users.get(users.indexOf(borrower.getKey())), (Double) borrower.getValue());
+                        payer.addBorrower(users.get(users.indexOf(tmp)), (Double) borrower.getValue());
                     } catch (ClassCastException e) {
-                        payer.addBorrower(users.get(users.indexOf(borrower.getKey())), ((Long) borrower.getValue()).doubleValue());
+                        payer.addBorrower(users.get(users.indexOf(tmp)), ((Long) borrower.getValue()).doubleValue());
                     }
                 });
             });
@@ -77,44 +78,29 @@ public class Group {
             expenses.remove(tmp);
         }
         expenses.add(expense);
-        int index = payers.indexOf(expense.getPayer().getId());
+        int index = payers.indexOf(expense.getPayer());
         if (index > -1) {
             for (User borrower : expense.getBorrowers()) {
                 payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
             }
         } else {
-            throw new IllegalArgumentException("No such payer in group");
+            throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
         }
     }
 
 
+    public float getTotal(String userId) {
+        if (payers.contains(userId)) {
+            return payers.get(payers.indexOf(userId)).getTotal();
+        } else throw new IllegalArgumentException("user with this id not in the group");
+    }
 
-    public float calculateTotal(DocumentSnapshot value, User currentUser) {
+    public float getAbsoluteTotal() {
         float total = 0;
-        for (Map.Entry<String, Object> borrower :
-                ((Map<String, Object>) value.getData().get(currentUser.getId())).entrySet()) {
-            try {
-                total += ((Double) borrower.getValue()).floatValue();
-            } catch (ClassCastException e) {
-                total += ((Long) borrower.getValue()).floatValue();
-            }
+        for (Payer payer : payers) {
+            total += payer.getTotal();
         }
         return total;
-    }
-
-    public float calculateAbsoluteTotal(DocumentSnapshot value) {
-        float absoluteTotal = 0;
-        for (Map.Entry<String, Object> user : ((Map<String, Object>) value.getData().get("users")).entrySet()) {
-            for (Map.Entry<String, Object> borrower : ((Map<String, Object>) value.getData().get(user.getKey())).entrySet()) {
-                try {
-                    absoluteTotal += ((Double) borrower.getValue()).floatValue();
-                } catch (ClassCastException e) {
-                    absoluteTotal += ((Long) borrower.getValue()).floatValue();
-                }
-            }
-
-        }
-        return absoluteTotal;
     }
 
     public void clearExpenses() {
@@ -133,6 +119,7 @@ public class Group {
     @Override
     public boolean equals(@Nullable Object obj) {
         try {
+
             return this.id.equals((String) obj);
         } catch (ClassCastException e) {
             try {
@@ -167,8 +154,7 @@ public class Group {
     public ShallowGroup shallowValue() throws InstantiationException {
         if (id != null) {
             return new ShallowGroup(id, name);
-        }
-        else throw new InstantiationException("Id in Group is null");
+        } else throw new InstantiationException("Id in Group is null");
     }
 
 }

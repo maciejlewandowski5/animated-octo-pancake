@@ -17,6 +17,8 @@ public class Payer extends User {
 
     public Payer(User user) {
         super(user);
+        borrowers = new ArrayList<>();
+        amounts = new ArrayList<>();
     }
 
     public void addBorrower(User user, Double amount) {
@@ -45,14 +47,22 @@ public class Payer extends User {
     Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
         borrowers.forEach(borrower -> {
-            result.put(borrower.getId(),amounts.get(borrowers.indexOf(borrower)));
+            result.put(borrower.getId(), amounts.get(borrowers.indexOf(borrower)));
         });
         return result;
     }
 
     public void clearDebts() {
-        for(int i=0;i<amounts.size();i++){
-            amounts.set(i,0d);
+        for (int i = 0; i < amounts.size(); i++) {
+            amounts.set(i, 0d);
         }
+    }
+
+    public float getTotal() {
+        float result = 0;
+        for(Double amount : amounts){
+            result += amount;
+        }
+        return  result;
     }
 }

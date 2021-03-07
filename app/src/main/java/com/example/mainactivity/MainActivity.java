@@ -55,10 +55,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import model.Expense;
 import model.Group;
 import model.GroupManager;
 import model.User;
+import modelv2.Expense;
+import modelv2.ShallowGroup;
+import modelv2.UserSession;
 
 public class MainActivity extends AppCompatActivity {
     private static final String EXPENSE = "EXPENSE";
@@ -78,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
     User currentUser;
     Group currentGroup;
 
-    InfiniteScroller<Expense> infiniteScroller;
+    InfiniteScroller<modelv2.Expense> infiniteScroller;
+    UserSession userSession;
 
     boolean listenerIsSet;
     boolean groupListnerSet;
@@ -128,28 +131,9 @@ public class MainActivity extends AppCompatActivity {
         interf = new TopBar.RefreshCurrentGroup() {
             @Override
             public void refreshCurrentGroup(Map.Entry<String, String> group) {
-                groupLis.remove();
-                expenseLis.remove();
-                groupListnerSet = false;
-                expenseListnerSet = false;
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                // GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData1(group);
-                System.out.println("GROUP  :  " + group.getKey());
-                currentUser.setCurrentGroupData1(group);
-                db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(currentUser.toMap());
-                setListeners();
+                userSession.changeCurrentGroup(new ShallowGroup(group.getKey(),group.getValue()));
             }
         };
-
-        accountHelper = new AccountHelper(this);
-        accountHelper.configureGoogleClient();
-        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
-            @Override
-            public void signInSuccessful(FirebaseUser user) {
-                setListeners();
-            }
-        });
-        accountHelper.signInUsingGoogle();
 
 
     }
@@ -175,142 +159,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void setGroupListener() {
-
-        if (groupListnerSet == false) {
-
-
-            GroupManager groupManager = GroupManager.getInstance();
-            groupManager.clearGroups();
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            MainActivity that = this;
-
-            groupLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                    if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
-                        return;
-                    }
-
-                    if (value != null && value.exists()) {
-                        groupManager.addCurrentGroup(value);
-                        groupManager.getCurrentGroup().setCurrentUser(currentUser);
-
-                        float total = 0;
-                        for (Map.Entry<String, Object> borrower : ((Map<String, Object>) value.getData().get(currentUser.getId())).entrySet()) {
-                            try {
-                                total += ((Double) borrower.getValue()).floatValue();
-                            } catch (ClassCastException e) {
-                                total += ((Long) borrower.getValue()).floatValue();
-                            }
-                        }
-
-
-                        float absoluteTotal = 0;
-                        for (Map.Entry<String, Object> user : ((Map<String, Object>) value.getData().get("users")).entrySet()) {
-                            for (Map.Entry<String, Object> borrower : ((Map<String, Object>) value.getData().get(user.getKey())).entrySet()) {
-                                try {
-                                    absoluteTotal += ((Double) borrower.getValue()).floatValue();
-                                } catch (ClassCastException e) {
-                                    absoluteTotal += ((Long) borrower.getValue()).floatValue();
-                                }
-                            }
-
-                        }
-                        Point size = new Point();
-                        getWindowManager().getDefaultDisplay().getRealSize(size);
-                        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
-                        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
-                                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
-                                finalWidth, ratioBar.getLayoutParams().height);
-                        ratioBar.setAnimation(anim);
-                        ratioBar.getLayoutParams().width =finalWidth;
-                        totalAmount.setText(Utils.formatPriceLocale(total));
-
-
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        Fragment topBar = TopBar.newInstance(true);
-                        ((TopBar) topBar).setRefreshCurrentGroup(that.interf);
-                        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
-                        fragmentTransaction.replace(id, topBar);
-                        fragmentTransaction.commit();
-                        setExpenseListner();
-                        id = topBar.getId();
-                    } else {
-                        Log.d(TAG, "Current data: null");
-                    }
-                }
-            });
-            groupListnerSet = true;
-        }
-    }
-
-    private void setExpenseListner() {
-        if (expenseListnerSet == false) {
-            GroupManager groupManager = GroupManager.getInstance();
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            expenseLis = db.collection("Groups").document(currentUser.getCurrentGroupId()).collection("Expenses").orderBy("dateTime", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                    if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
-                        return;
-                    }
-
-                    ArrayList<Expense> expenses = new ArrayList<>();
-                    for (DocumentSnapshot ds : value.getDocuments()) {
-                        expenses.add(new Expense(ds));
-                    }
-                    groupManager.getCurrentGroup().getExpenseManager().setExpenses(expenses);
-                    infiniteScroller.populate((ArrayList<Expense>) groupManager.getCurrentGroup().getExpenseManager().getExpenses());
-                }
-            });
-            expenseListnerSet = true;
-        }
-    }
-
-    private void setListeners() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .get(Source.SERVER).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-
-                    currentUser = new User(documentSnapshot);
-                    System.out.println("Current user group:  " + currentUser.getCurrentGroupId());
-                    setGroupListener();
-                }
-            }
-        });
-    }
-
-    private void setUserListners() {
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if (error != null) {
-                            Log.w(TAG, "Listen failed.", error);
-                            return;
-                        }
-
-                        if (value != null && value.exists()) {
-                            currentUser = new User(value);
-                            System.out.println("Current user group:  " + currentUser.getCurrentGroupId());
-                            setGroupListener();
-                        } else {
-                            Log.d(TAG, "Current data: null");
-                        }
-                    }
-                });
-    }
-
-
     public void startPaymentsList(View view) {
         Intent intent = new Intent(this, PaymentsList.class);
         ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
@@ -320,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        MainActivity that = this;
         if (requestCode == accountHelper.getRCSGININCode()) {
             accountHelper.verifySignInResults(TAG, data);
         }
@@ -335,21 +182,63 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            setListeners();
-        }
+    protected void onStart() {
+        super.onStart();
+        accountHelper = new AccountHelper(this);
+        accountHelper.configureGoogleClient();
+        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
+            @Override
+            public void signInSuccessful(FirebaseUser user) {
+                userSession = UserSession.getInstance();
+
+                userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
+                    @Override
+                    public void onGroupUpdated(modelv2.Group group) {
+                        Point size = new Point();
+                        getWindowManager().getDefaultDisplay().getRealSize(size);
+                        float total = 0;
+                        try {
+                           total = group.getTotal(user.getUid());
+                        }catch (IllegalArgumentException e) {
+                            total = 0f;
+                        }
+                        float absoluteTotal = group.getAbsoluteTotal();
+
+                        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
+                        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
+                                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
+                                finalWidth, ratioBar.getLayoutParams().height);
+                        ratioBar.setAnimation(anim);
+                        ratioBar.getLayoutParams().width = finalWidth;
+                        totalAmount.setText(Utils.formatPriceLocale(total));
+
+
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        TopBar topBar = TopBar.newInstance(true);
+                        // topBar.setRefreshCurrentGroup(that.interf);
+                        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                        fragmentTransaction.replace(id, topBar);
+                        fragmentTransaction.commit();
+                        id = topBar.getId();
+                    }
+                });
+                userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
+                    @Override
+                    public void onExpensesUpdated(ArrayList<Expense> expenses) {
+                        infiniteScroller.populate(expenses);
+                    }
+                });
+
+            }
+        });
+        accountHelper.signInUsingGoogle();
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (groupLis != null && expenseLis != null) {
-            groupLis.remove();
-            expenseLis.remove();
-            groupListnerSet = false;
-            expenseListnerSet = false;
-        }
+    protected void onStop() {
+        super.onStop();
+        userSession.removeOnGroupUpdated();
+        userSession.removeOnExpensesUpdated();
     }
 }

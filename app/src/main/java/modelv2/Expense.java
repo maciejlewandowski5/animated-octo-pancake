@@ -3,6 +3,8 @@ package modelv2;
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,7 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
-public class Expense {
+public class Expense implements Serializable {
     private String id;
     private String name;
     private Double amount;
@@ -47,6 +49,15 @@ public class Expense {
 
     public User getPayer() {
         return payer;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public Date getDateTime() {
+        return dateTime;
     }
 
     public ArrayList<User> getBorrowers() {
