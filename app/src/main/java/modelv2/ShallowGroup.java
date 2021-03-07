@@ -1,5 +1,6 @@
 package modelv2;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ShallowGroup {
@@ -26,5 +27,11 @@ public class ShallowGroup {
 
     public String getGroupName() {
         return groupName;
+    }
+
+    Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put(groupId,groupName);
+        return result;
     }
 }

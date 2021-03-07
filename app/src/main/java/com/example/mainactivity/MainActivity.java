@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     ListenerRegistration groupLis;
     ListenerRegistration expenseLis;
     private static TopBar.RefreshCurrentGroup interf;
-    ;
+
 
     int id = 0;
 

@@ -1,5 +1,7 @@
 package modelv2;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,14 +14,14 @@ import java.util.Set;
 public class Expense {
     private String id;
     private String name;
-    private float amount;
+    private Double amount;
     private Date dateTime;
     private User payer;
     private ArrayList<User> borrowers;
 
     public Expense(DocumentSnapshot ds) {
         id = ds.getId();
-        amount  = Objects.requireNonNull(ds.getDouble("amount")).floatValue();
+        amount  = Objects.requireNonNull(ds.getDouble("amount"));
         dateTime = ds.getDate("dateTime");
         name = ds.getString("name");
         payer = new User(ds.getString("payerName"),ds.getString("payer"));
@@ -35,7 +37,7 @@ public class Expense {
 
     }
 
-    public Expense(String name, float amount, Date dateTime, User payer, ArrayList<User> borrowers) {
+    public Expense(String name, Double amount, Date dateTime, User payer, ArrayList<User> borrowers) {
         this.name = name;
         this.amount = amount;
         this.dateTime = dateTime;
@@ -43,28 +45,12 @@ public class Expense {
         this.borrowers = borrowers;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public User getPayer() {
+        return payer;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setAmount(float amount) {
-        this.amount = amount;
-    }
-
-    public void setDateTime(Date dateTime) {
-        this.dateTime = dateTime;
-    }
-
-    public void setPayer(User payer) {
-        this.payer = payer;
-    }
-
-    public void setBorrowers(ArrayList<User> borrowers) {
-        this.borrowers = borrowers;
+    public ArrayList<User> getBorrowers() {
+        return borrowers;
     }
 
     Map<String,Object> toMap() {
@@ -84,5 +70,22 @@ public class Expense {
 
     public String getId() {
         return  id;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        try {
+            return this.id.equals((String) obj);
+        } catch (ClassCastException e) {
+            try {
+                return this.id.equals(((Expense) obj).getId());
+            } catch (ClassCastException f) {
+                return false;
+            }
+        }
     }
 }

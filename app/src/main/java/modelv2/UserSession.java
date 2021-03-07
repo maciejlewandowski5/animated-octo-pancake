@@ -45,7 +45,7 @@ public class UserSession {
         groupListenerSet = false;
         expensesListenerSet = false;
         groups = new ArrayList<>();
-        currentGroup = new Group();
+        currentGroup = null;
         onGroupUpdated = null;
         onExpensesUpdated = null;
         db = FirebaseFirestore.getInstance();
@@ -143,12 +143,12 @@ public class UserSession {
     }
 
 
-    public void createNewGroup(String name, String code){
-        Group group = new Group(name,code,currentUser);
+    public void createNewGroup(String name, String code) {
+        Group group = new Group(name, code, currentUser);
         db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                groups.add(new ShallowGroup(name,documentReference.getId()));
+                groups.add(new ShallowGroup(name, documentReference.getId()));
                 changeCurrentGroup(documentReference.getId());
             }
         });
@@ -171,16 +171,16 @@ public class UserSession {
         }
     }
 
-    public void addExpense(String name, float amount, Date date, User payer, ArrayList<User> borrowers){
-        Expense expense = new Expense(name,amount,date,payer,borrowers);
+    public void addExpense(String name, double amount, Date date, User payer, ArrayList<User> borrowers) {
+        Expense expense = new Expense(name, amount, date, payer, borrowers);
         currentGroup.addExpense(expense);
         db.collection("Groups").document(currentShallowGroup.getGroupId()).
                 collection("Expenses").add(expense.toMap());
         db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap());
     }
 
-    public void editExpense(Expense expense){
-        currentGroup.editExpense(expense);
+    public void editExpense(Expense expense) {
+        currentGroup.addExpense(expense);
         db.collection("Groups").document(currentShallowGroup.getGroupId()).
                 collection("Expenses").document(expense.getId()).update(expense.toMap());
         db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap());
@@ -212,8 +212,16 @@ public class UserSession {
         this.onExpensesUpdated = onExpensesUpdated;
     }
 
-    private Map<String,Object> toMap() {
-        return new HashMap<>();
+    private Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", currentUser.getName());
+        result.put("currentGroup", currentShallowGroup.toMap());
+        Map<String, Object> nested = new HashMap<>();
+        groups.forEach(group -> {
+            nested.putAll(group.toMap());
+        });
+        result.put("groups",nested);
+        return result;
     }
 
     public interface OnGroupUpdated {

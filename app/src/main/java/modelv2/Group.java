@@ -15,6 +15,7 @@ public class Group {
     private String name;
     private ArrayList<User> users;
     private ArrayList<Payer> payers;
+    private ArrayList<Expense> expenses;
 
     public Group(DocumentSnapshot value) {
         id = value.getId();
@@ -22,6 +23,7 @@ public class Group {
         name = value.getString("name");
         users = new ArrayList<>();
         payers = new ArrayList<>();
+        expenses = new ArrayList<>();
 
         try {
             Set<Map.Entry<String, Object>> usersEntrySet = ((Map<String, Object>) value.getData().get("users")).entrySet();
@@ -37,7 +39,7 @@ public class Group {
                 ((Map<String, Object>) value.getData().get(payer.getId())).entrySet().forEach((borrower) -> {
                     try {
                         payer.addBorrower(users.get(users.indexOf(borrower.getKey())), (Double) borrower.getValue());
-                    }catch (ClassCastException){
+                    } catch (ClassCastException e) {
                         payer.addBorrower(users.get(users.indexOf(borrower.getKey())), ((Long) borrower.getValue()).doubleValue());
                     }
                 });
@@ -49,13 +51,43 @@ public class Group {
     }
 
     public Group(String name, String code, User currentUser) {
+        id = null;
+        this.code = code;
+        this.name = name;
+        users = new ArrayList<>();
+        payers = new ArrayList<>();
+        expenses = new ArrayList<>();
 
+        users.add(currentUser);
+        payers.add(new Payer(currentUser));
     }
 
+    //also can edit expenses
     public void addExpense(Expense expense) {
+        if (expenses.contains(expense)) {
+            Expense tmp = expenses.get(expenses.indexOf(expense));
+            int index = payers.indexOf(tmp.getPayer().getId());
+            if (index > -1) {
+                for (User borrower : tmp.getBorrowers()) {
+                    payers.get(index).removeBorrower(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
+                }
+            } else {
+                throw new IllegalArgumentException("No such payer in group");
+            }
+            expenses.remove(tmp);
+        }
+        expenses.add(expense);
+        int index = payers.indexOf(expense.getPayer().getId());
+        if (index > -1) {
+            for (User borrower : expense.getBorrowers()) {
+                payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
+            }
+        } else {
+            throw new IllegalArgumentException("No such payer in group");
+        }
     }
 
-    ;
+
 
     public float calculateTotal(DocumentSnapshot value, User currentUser) {
         float total = 0;
@@ -86,10 +118,12 @@ public class Group {
     }
 
     public void clearExpenses() {
+        expenses.clear();
+        payers.forEach(Payer::clearDebts);
     }
 
     public ArrayList<Expense> getExpenses() {
-        return new ArrayList<Expense>();
+        return expenses;
     }
 
     public String getId() {
@@ -111,17 +145,30 @@ public class Group {
 
 
     Map<String, Object> toMap() {
-        //TODO::
-        return new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", code);
+        result.put("name", name);
+        Map<String, Object> nested = new HashMap<>();
+        users.forEach(user -> {
+            nested.put(user.getId(), user.getName());
+        });
+        result.put("users", nested);
+        payers.forEach(payer -> {
+            result.put(payer.getId(), payer.toMap());
+        });
+        return result;
     }
 
-    public void addUser(User currentUser) {
+    public void addUser(User user) {
+        users.add(user);
+        payers.add(new Payer(user));
     }
 
-    public ShallowGroup shallowValue() {
-        return new ShallowGroup("", "");
+    public ShallowGroup shallowValue() throws InstantiationException {
+        if (id != null) {
+            return new ShallowGroup(id, name);
+        }
+        else throw new InstantiationException("Id in Group is null");
     }
 
-    public void editExpense(Expense expense) {
-    }
 }

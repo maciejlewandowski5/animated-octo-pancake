@@ -1,5 +1,7 @@
 package modelv2;
 
+import androidx.annotation.Nullable;
+
 public class User {
 
     private String name;
@@ -21,5 +23,18 @@ public class User {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        try {
+            return this.id.equals((String) obj);
+        } catch (ClassCastException e) {
+            try {
+                return this.id.equals(((User) obj).getId());
+            } catch (ClassCastException f) {
+                return false;
+            }
+        }
     }
 }
