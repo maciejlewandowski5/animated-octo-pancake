@@ -63,36 +63,20 @@ import modelv2.ShallowGroup;
 import modelv2.UserSession;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "Exxpense.MainActivity";
     private static final String EXPENSE = "EXPENSE";
     private static final String EMPTY = "EMPTY";
-    private static final int RC_SIGN_IN = 10;
-    private static final String TAG = "AS";
 
-    View floatButton;
-    ConstraintLayout history;
-    TextView historyTex;
-    TextView totalAmount;
-    ImageView ratioBar;
+    private ConstraintLayout history;
+    private TextView totalAmount;
+    private ImageView ratioBar;
+    private LinearLayout container;
+    private int id = 0;
 
-    private FirebaseAuth mAuth;
     private AccountHelper accountHelper;
+    private InfiniteScroller<modelv2.Expense> infiniteScroller;
+    private UserSession userSession;
 
-    User currentUser;
-    Group currentGroup;
-
-    InfiniteScroller<modelv2.Expense> infiniteScroller;
-    UserSession userSession;
-
-    boolean listenerIsSet;
-    boolean groupListnerSet;
-    boolean expenseListnerSet;
-
-    ListenerRegistration groupLis;
-    ListenerRegistration expenseLis;
-    private static TopBar.RefreshCurrentGroup interf;
-
-
-    int id = 0;
 
 
     @Override
@@ -100,22 +84,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        LinearLayout container = findViewById(R.id.container);
-        floatButton = findViewById(R.id.floatingActionButton);
-        history = findViewById(R.id.history_container);
-        historyTex = findViewById(R.id.history);
-        totalAmount = findViewById(R.id.textView4);
-        ratioBar = findViewById(R.id.imageView);
-        listenerIsSet = false;
-        groupListnerSet = false;
-        expenseListnerSet = false;
-
-        groupLis = null;
-        expenseLis = null;
-        id = R.id.fragment;
-
-        currentUser = new User("", "");
+        initializeViews();
         MainActivity that = this;
         infiniteScroller = new InfiniteScroller<>(container, 11 + 11 + 2 + 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
             @Override
@@ -126,16 +95,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent, options.toBundle());
             }
         }, ListElement::newInstance, this);
-
-
-        interf = new TopBar.RefreshCurrentGroup() {
-            @Override
-            public void refreshCurrentGroup(Map.Entry<String, String> group) {
-                userSession.changeCurrentGroup(new ShallowGroup(group.getKey(),group.getValue()));
-            }
-        };
-
-
     }
 
     public static void refreshCurrentGroup(Map.Entry<String, Object> group) {
@@ -155,9 +114,15 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
         };
-        interf.refreshCurrentGroup(n);
     }
 
+    private void initializeViews(){
+        container = findViewById(R.id.container);
+        history = findViewById(R.id.history_container);
+        totalAmount = findViewById(R.id.textView4);
+        ratioBar = findViewById(R.id.imageView);
+        id = R.id.fragment;
+    }
 
     public void startPaymentsList(View view) {
         Intent intent = new Intent(this, PaymentsList.class);
@@ -216,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         TopBar topBar = TopBar.newInstance(true);
-                        // topBar.setRefreshCurrentGroup(that.interf);
                         fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
                         fragmentTransaction.replace(id, topBar);
                         fragmentTransaction.commit();
@@ -238,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        userSession.removeOnGroupUpdated();
-        userSession.removeOnExpensesUpdated();
+        //userSession.removeOnGroupUpdated();
+       // userSession.removeOnExpensesUpdated();
     }
 }

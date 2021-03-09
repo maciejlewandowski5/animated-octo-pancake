@@ -4,12 +4,13 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Group {
+public class Group implements Serializable {
     private String id;
     private String code;
     private String name;
@@ -37,7 +38,7 @@ public class Group {
 
             payers.forEach((payer) -> {
                 ((Map<String, Object>) value.getData().get(payer.getId())).entrySet().forEach((borrower) -> {
-                    User tmp = new User(borrower.getKey(),borrower.getKey());
+                    User tmp = new User(borrower.getKey(), borrower.getKey());
                     try {
                         payer.addBorrower(users.get(users.indexOf(tmp)), (Double) borrower.getValue());
                     } catch (ClassCastException e) {
@@ -65,27 +66,30 @@ public class Group {
 
     //also can edit expenses
     public void addExpense(Expense expense) {
-        if (expenses.contains(expense)) {
-            Expense tmp = expenses.get(expenses.indexOf(expense));
-            int index = payers.indexOf(tmp.getPayer().getId());
+        if (!expenses.isEmpty()) {
+            if (expenses.contains(expense)) {
+                Expense tmp = expenses.get(expenses.indexOf(expense));
+                int index = payers.indexOf(tmp.getPayer());
+                if (index > -1) {
+                    for (User borrower : tmp.getBorrowers()) {
+                        payers.get(index).removeBorrower(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
+                    }
+                } else {
+                    throw new IllegalArgumentException("No such payer in group");
+                }
+                expenses.remove(tmp);
+            }
+        }
+            expenses.add(expense);
+            int index = payers.indexOf(expense.getPayer());
             if (index > -1) {
-                for (User borrower : tmp.getBorrowers()) {
-                    payers.get(index).removeBorrower(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
+                for (User borrower : expense.getBorrowers()) {
+                    payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
                 }
             } else {
-                throw new IllegalArgumentException("No such payer in group");
+                throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
             }
-            expenses.remove(tmp);
-        }
-        expenses.add(expense);
-        int index = payers.indexOf(expense.getPayer());
-        if (index > -1) {
-            for (User borrower : expense.getBorrowers()) {
-                payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
-            }
-        } else {
-            throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
-        }
+
     }
 
 
@@ -101,6 +105,20 @@ public class Group {
             total += payer.getTotal();
         }
         return total;
+    }
+
+    public float getStandardDeviation() {
+        //TODO::
+        return 12f;
+    }
+
+    public float getMean() {
+        //TODO::
+        return 32f;
+    }
+
+    public ArrayList<User> getUsers() {
+        return users;
     }
 
     public void clearExpenses() {

@@ -40,6 +40,7 @@ public class UserSession {
 
     private OnGroupUpdated onGroupUpdated;
     private OnExpensesUpdated onExpensesUpdated;
+    private OnExpensePushed onExpensePushed;
 
     FirebaseFirestore db;
 
@@ -142,7 +143,6 @@ public class UserSession {
     }
 
 
-
     public void changeCurrentGroup(ShallowGroup shallowGroup) {
         if (groups.contains(shallowGroup)) {
             this.removeGroupListener();
@@ -196,15 +196,37 @@ public class UserSession {
         Expense expense = new Expense(name, amount, date, payer, borrowers);
         currentGroup.addExpense(expense);
         db.collection("Groups").document(currentShallowGroup.getGroupId()).
-                collection("Expenses").add(expense.toMap());
-        db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap());
+                collection("Expenses").add(expense.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        if (onExpensePushed != null) {
+                            onExpensePushed.onExpensePushed();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     public void editExpense(Expense expense) {
         currentGroup.addExpense(expense);
         db.collection("Groups").document(currentShallowGroup.getGroupId()).
-                collection("Expenses").document(expense.getId()).update(expense.toMap());
-        db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap());
+                collection("Expenses").document(expense.getId()).update(expense.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        if (onExpensePushed != null) {
+                            onExpensePushed.onExpensePushed();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void removeGroupListener() {
@@ -215,6 +237,10 @@ public class UserSession {
     private void removeExpenseListener() {
         expenseListener.remove();
         this.expensesListenerSet = false;
+    }
+
+    public void setOnExpensePushed(OnExpensePushed onExpensePushed) {
+        this.onExpensePushed = onExpensePushed;
     }
 
     public void setOnGroupUpdated(OnGroupUpdated onGroupUpdated) {
@@ -229,6 +255,18 @@ public class UserSession {
         this.onExpensesUpdated = null;
     }
 
+    public void removeOnExpensePushed() {
+        this.onExpensePushed = null;
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public Group getCurrentGroup() {
+        return currentGroup;
+    }
+
     public void setOnExpensesUpdated(OnExpensesUpdated onExpensesUpdated) {
         this.onExpensesUpdated = onExpensesUpdated;
     }
@@ -241,8 +279,12 @@ public class UserSession {
         groups.forEach(group -> {
             nested.putAll(group.toMap());
         });
-        result.put("groups",nested);
+        result.put("groups", nested);
         return result;
+    }
+
+    public interface OnExpensePushed {
+        public void onExpensePushed();
     }
 
     public interface OnGroupUpdated {

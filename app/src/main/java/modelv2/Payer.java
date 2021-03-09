@@ -1,10 +1,11 @@
 package modelv2;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Payer extends User {
+public class Payer extends User implements Serializable {
 
     private ArrayList<User> borrowers;
     private ArrayList<Double> amounts;

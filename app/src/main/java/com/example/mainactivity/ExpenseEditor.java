@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.text.InputFilter;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,41 +41,45 @@ import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import model.Expense;
-import model.Group;
 import model.GroupManager;
-import model.User;
+import modelv2.Group;
+import modelv2.User;
+import modelv2.UserSession;
 
 public class ExpenseEditor extends AppCompatActivity {
     private static final String EXPENSE = "EXPENSE";
-    private static final String EMPTY = "EMPTY";
-    static final int DATE_DIALOG_ID = 0;
-    private static TextView editDate;
-    private static Calendar calendar;
-    LinearLayout container;
-    PopupMenu popupMenu;
-    TextView addBorrower;
-    TextView amount;
-    SeekBar seekBar;
-    ArrayList<User> borrowers;
-    User payer;
-    Group group;
-    Expense expense;
 
-    public static void setTime(int hour, int minute) {
+    private TextView editDate;
+    private Calendar calendar;
+    private LinearLayout container;
+    private PopupMenu popupMenu;
+    private TextView addBorrower;
+    private TextView amount;
+    private TextView payers;
+    private SeekBar seekBar;
+
+
+    ArrayList<modelv2.User> borrowers;
+    modelv2.User payer;
+    modelv2.Group group;
+    modelv2.Expense expense;
+    UserSession userSession;
+
+    public void setTime(int hour, int minute) {
         calendar.set(Calendar.HOUR, hour);
         calendar.set(Calendar.MINUTE, minute);
         updateDateTime();
     }
 
-    public static void setDate(int year, int month, int day) {
+    public void setDate(int year, int month, int day) {
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONDAY, month);
         calendar.set(Calendar.DAY_OF_WEEK, day);
         updateDateTime();
     }
 
-    private static void updateDateTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
+    private void updateDateTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm dd-MM-yyyy", Locale.getDefault());
         editDate.setText(simpleDateFormat.format(calendar.getTime()));
     }
 
@@ -84,14 +89,11 @@ public class ExpenseEditor extends AppCompatActivity {
         setContentView(R.layout.activity_expense_editor);
 
         Intent intent = getIntent();
+        expense = (modelv2.Expense) intent.getSerializableExtra(EXPENSE);
 
-        expense = (Expense) intent.getSerializableExtra(EXPENSE);
-
-
-        group = GroupManager.getInstance().getCurrentGroup();
-
+        userSession = UserSession.getInstance();
+        group = userSession.getCurrentGroup();
         borrowers = new ArrayList<>();
-
         calendar = Calendar.getInstance();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -100,38 +102,29 @@ public class ExpenseEditor extends AppCompatActivity {
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 
-
-        addBorrower = findViewById(R.id.add_borrower);
-        container = findViewById(R.id.container);
-        editDate = findViewById(R.id.editTextDate);
-        popupMenu = new PopupMenu(this, addBorrower);
-        TextView payers = findViewById(R.id.textView7);
-        amount = findViewById(R.id.editTextNumber);
-        seekBar = findViewById(R.id.seekBar);
+        initializeViews();
 
 
-        if(expense==null){
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
-            DecimalFormat format = new DecimalFormat("#.##");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
+        DecimalFormat format = new DecimalFormat("#.##");
+        if (expense == null) {
             editDate.setText(simpleDateFormat.format(new Date()));
-            payers.setText(group.getCurrentUser().getName());
-            payer = group.getCurrentUser();
-            seekBar.setMax(Float.valueOf(group.getMaxAmount() * 100).intValue());
-            seekBar.setProgress(Float.valueOf(group.getMeanAmount() * 100).intValue());
+            payers.setText(userSession.getCurrentUser().getName());
+            payer = userSession.getCurrentUser();
+            seekBar.setMax(Float.valueOf((group.getMean() + group.getStandardDeviation()) * 100).intValue());
+            seekBar.setProgress(Float.valueOf(group.getMean() * 100).intValue());
             amount.setFilters(new InputFilter[]{new DecimalDigitsInputFilter(12, 2)});
-            amount.setText(format.format(group.getMeanAmount()));
+            amount.setText(format.format(group.getMean()));
 
-        }else{
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd-MM-yyyy", Locale.getDefault());
-            DecimalFormat format = new DecimalFormat("#.##");
+        } else {
             editDate.setText(simpleDateFormat.format(expense.getDateTime()));
             payers.setText(expense.getPayer().getName());
-            ((TextView)findViewById(R.id.editTextTextPersonName)).setText(expense.getName());
+            ((TextView) findViewById(R.id.editTextTextPersonName)).setText(expense.getName());
             payer = expense.getPayer();
             borrowers.addAll(expense.getBorrowers());
             refreshDisplayedBorrowers(borrowers);
-            seekBar.setMax(Float.valueOf(group.getMaxAmount() * 100).intValue());
-            seekBar.setProgress(Float.valueOf(expense.getAmount() * 100).intValue());
+            seekBar.setMax(Float.valueOf((group.getMean() + group.getStandardDeviation()) * 100).intValue());
+            seekBar.setProgress(Float.valueOf(group.getMean() * 100).intValue());
             amount.setFilters(new InputFilter[]{new DecimalDigitsInputFilter(12, 2)});
             amount.setText(format.format(expense.getAmount()));
         }
@@ -152,14 +145,22 @@ public class ExpenseEditor extends AppCompatActivity {
 
             }
         });
+    }
 
-
+    private void initializeViews() {
+        addBorrower = findViewById(R.id.add_borrower);
+        container = findViewById(R.id.container);
+        editDate = findViewById(R.id.editTextDate);
+        popupMenu = new PopupMenu(this, addBorrower);
+        payers = findViewById(R.id.textView7);
+        amount = findViewById(R.id.editTextNumber);
+        seekBar = findViewById(R.id.seekBar);
     }
 
     private void populatePopupMenu(PopupMenu popupMenu) {
-        for (User user : group.getUsers()) {
+        for (modelv2.User user : group.getUsers()) {
             boolean userIsInBorrowers = false;
-            for (User borrower : borrowers) {
+            for (modelv2.User borrower : borrowers) {
                 if (user.getName().equals(borrower.getName())) {
                     userIsInBorrowers = true;
                     break;
@@ -176,13 +177,10 @@ public class ExpenseEditor extends AppCompatActivity {
 
     public void removeUser(View view) {
         FrameLayout frameLayout = (FrameLayout) view;
-
-
         TextView textView = (TextView) ((ConstraintLayout) frameLayout.getChildAt(0)).getChildAt(0);
-
         String userName = (String) textView.getText();
-        ArrayList<User> newBorrowers = new ArrayList<>();
-        for (User borrower : borrowers) {
+        ArrayList<modelv2.User> newBorrowers = new ArrayList<>();
+        for (modelv2.User borrower : borrowers) {
             if (!userName.equals(borrower.getName())) {
                 newBorrowers.add(borrower);
             }
@@ -191,18 +189,18 @@ public class ExpenseEditor extends AppCompatActivity {
         refreshDisplayedBorrowers(newBorrowers);
     }
 
-    private void displayBorrowers(ArrayList<User> borrowers) {
-        for (User borrower : borrowers) {
+    private void displayBorrowers(ArrayList<modelv2.User> borrowers) {
+        for (modelv2.User borrower : borrowers) {
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             Fragment fragment = BorrowerFragment.newInstance(borrower);
-            fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,android.R.anim.fade_out);
+            fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.fade_out);
             fragmentTransaction.add(container.getId(), fragment, borrower.getName());//TODO::change for ID
             fragmentTransaction.commit();
         }
     }
 
-    private void refreshDisplayedBorrowers(ArrayList<User> borrowers) {
+    private void refreshDisplayedBorrowers(ArrayList<modelv2.User> borrowers) {
         container.removeAllViews();
         displayBorrowers(borrowers);
     }
@@ -215,7 +213,7 @@ public class ExpenseEditor extends AppCompatActivity {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     CharSequence itemTitle = item.getTitle();
-                    for (User user : group.getUsers()) {
+                    for (modelv2.User user : group.getUsers()) {
                         if (itemTitle.equals(user.getName())) {
                             borrowers.add(user);
                         }
@@ -223,7 +221,7 @@ public class ExpenseEditor extends AppCompatActivity {
                     }
                     if (itemTitle.equals(getString(R.string.everyone))) {
                         borrowers.clear();
-                        borrowers = (ArrayList<User>) ((ArrayList<User>) group.getUsers()).clone();
+                        borrowers = (ArrayList<modelv2.User>) ((ArrayList<modelv2.User>) group.getUsers()).clone();
                     }
                     refreshDisplayedBorrowers(borrowers);
                     return false;
@@ -238,14 +236,14 @@ public class ExpenseEditor extends AppCompatActivity {
 
     public void addPayer(View view) {
         PopupMenu popupMenu = new PopupMenu(this, view);
-        for (User user : group.getUsers()) {
+        for (modelv2.User user : group.getUsers()) {
             popupMenu.getMenu().add(user.getName());
         }
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 CharSequence itemTitle = item.getTitle();
-                for (User user : group.getUsers()) {
+                for (modelv2.User user : group.getUsers()) {
                     if (itemTitle.equals(user.getName())) {
                         payer = user;
                     }
@@ -258,13 +256,13 @@ public class ExpenseEditor extends AppCompatActivity {
     }
 
     public void pickDateTime(View view) {
-        DialogFragment newFragment = new TimePickerFragment();
+        DialogFragment newFragment = new TimePickerFragment(this);
         newFragment.show(getSupportFragmentManager(), "timePicker");
         showDatePickerDialog(view);
     }
 
     public void showDatePickerDialog(View v) {
-        DialogFragment newFragment = new DatePickerFragment();
+        DialogFragment newFragment = new DatePickerFragment(this);
         newFragment.show(getSupportFragmentManager(), "datePicker");
     }
 
@@ -272,43 +270,31 @@ public class ExpenseEditor extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
         String name = ((TextView) findViewById(R.id.editTextTextPersonName)).getText().toString();
-        Expense expense1 = new Expense(price, name, payer, borrowers);
 
-        if(expense==null) {
-
-            db.collection("Groups").document(group.getId()).collection("Expenses").add(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    for(User borrower :expense1.getBorrowers()) {
-                        db.collection("Groups").document(group.getId()).update(expense1.getPayer().getId() + "." + borrower.getId(), FieldValue.increment(expense1.getAmount()/(float)borrowers.size())).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                ;
-                            }
-                        });
-                    }onBackPressed();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                }
-            });
-        }
-        else{
-            db.collection("Groups").document(group.getId()).collection("Expenses").document(expense.getId()).update(expense1.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    //TODO:: fix group fileds when user moddifes expense
-                    onBackPressed();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                }
-            });
+        if (expense == null) {
+            userSession.addExpense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
+        }else {
+            modelv2.Expense expense1 = new modelv2.Expense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
+            expense1.setId(expense.getId());
+            userSession.editExpense(expense1);
         }
         onBackPressed();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        userSession.setOnExpensePushed(new UserSession.OnExpensePushed() {
+            @Override
+            public void onExpensePushed() {
+                onBackPressed();
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        userSession.removeOnExpensePushed();
     }
 }

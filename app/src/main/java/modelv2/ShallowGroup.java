@@ -2,10 +2,11 @@ package modelv2;
 
 import androidx.annotation.Nullable;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ShallowGroup {
+public class ShallowGroup implements Serializable {
     String groupId;
     String groupName;
 

@@ -7,21 +7,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import model.User;
+import modelv2.User;
 
 
 public class BorrowerFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
-    private User user;
+    private modelv2.User user;
 
 
     public BorrowerFragment() {
         // Required empty public constructor
     }
 
-    public static BorrowerFragment newInstance(User user) {
+    public static BorrowerFragment newInstance(modelv2.User user) {
         BorrowerFragment fragment = new BorrowerFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PARAM1, user);

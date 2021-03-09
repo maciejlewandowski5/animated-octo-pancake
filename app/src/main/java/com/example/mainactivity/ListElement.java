@@ -17,10 +17,7 @@ import model.Expense;
 
 public class ListElement extends Fragment {
 
-
     private static final String ARG_PARAM1 = "param1";
-
-
     private modelv2.Expense expense;
 
     public ListElement() {
@@ -57,7 +54,7 @@ public class ListElement extends Fragment {
             title.setText(expense.getName());
             user.setText(expense.getPayer().getName());
 
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy hh:mm", Locale.getDefault());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
 
             date.setText(simpleDateFormat.format(expense.getDateTime()));
 

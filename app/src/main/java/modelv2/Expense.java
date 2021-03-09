@@ -64,7 +64,7 @@ public class Expense implements Serializable {
         return borrowers;
     }
 
-    Map<String,Object> toMap() {
+    public Map<String,Object> toMap() {
         Map<String,Object> result = new HashMap<>();
         result.put("amount",amount);
         result.put("dateTime",dateTime);
@@ -89,6 +89,9 @@ public class Expense implements Serializable {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        if(id==null){
+            return false;
+        }
         try {
             return this.id.equals((String) obj);
         } catch (ClassCastException e) {
@@ -98,5 +101,9 @@ public class Expense implements Serializable {
                 return false;
             }
         }
+    }
+
+    public void setId(String id) {
+    this.id = id;
     }
 }
