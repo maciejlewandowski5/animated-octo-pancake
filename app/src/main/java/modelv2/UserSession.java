@@ -42,6 +42,9 @@ public class UserSession {
     private OnExpensesUpdated onExpensesUpdated;
     private OnExpensePushed onExpensePushed;
     private OnGroupPushed onGroupPushed;
+    private OnJoinGroupError onJoinGroupError;
+    private OnJoinGroupSuccess onJoinGroupSuccess;
+
 
     FirebaseFirestore db;
 
@@ -185,12 +188,19 @@ public class UserSession {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
                     if (documentSnapshot != null && documentSnapshot.exists()) {
-                        ShallowGroup shallowGroup = new ShallowGroup(documentSnapshot.getString("name"), documentSnapshot.getId());
+                        ShallowGroup shallowGroup = new ShallowGroup(documentSnapshot.getId(),documentSnapshot.getString("name"));
                         groups.add(shallowGroup);
                         changeCurrentGroup(shallowGroup);
                         Group group = new Group(documentSnapshot);
                         group.addUser(currentUser);
                         documentSnapshot.getReference().update(group.toMap());
+                        if(onJoinGroupSuccess!=null){
+                            onJoinGroupSuccess.onJoinGroupSuccess();
+                        }
+                    }else{
+                        if(onJoinGroupError!=null){
+                            onJoinGroupError.onJoinGroupError();
+                        }
                     }
                 }
             });
@@ -263,12 +273,28 @@ public class UserSession {
         this.onGroupPushed = null;
     }
 
+    public void setOnJoinGroupError(OnJoinGroupError onJoinGroupError) {
+        this.onJoinGroupError = onJoinGroupError;
+    }
+
+    public void setOnJoinGroupSuccess(OnJoinGroupSuccess onJoinGroupSuccess) {
+        this.onJoinGroupSuccess = onJoinGroupSuccess;
+    }
+
     public void removeOnExpensesUpdated() {
         this.onExpensesUpdated = null;
     }
 
+    public void removeOnJoinGroupError(){
+        this.onJoinGroupError = null;
+    }
+
     public void removeOnExpensePushed() {
         this.onExpensePushed = null;
+    }
+
+    public void removeOnJoinGroupSuccess() {
+        this.onJoinGroupSuccess = null;
     }
 
     public User getCurrentUser() {
@@ -312,4 +338,11 @@ public class UserSession {
         public void onExpensesUpdated(ArrayList<Expense> expenses);
     }
 
+    public interface OnJoinGroupError {
+        public void onJoinGroupError();
+    }
+
+    public interface OnJoinGroupSuccess {
+        public void onJoinGroupSuccess();
+    }
 }
