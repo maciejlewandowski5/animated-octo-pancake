@@ -41,6 +41,7 @@ public class UserSession {
     private OnGroupUpdated onGroupUpdated;
     private OnExpensesUpdated onExpensesUpdated;
     private OnExpensePushed onExpensePushed;
+    private OnGroupPushed onGroupPushed;
 
     FirebaseFirestore db;
 
@@ -51,6 +52,7 @@ public class UserSession {
         currentGroup = null;
         onGroupUpdated = null;
         onExpensesUpdated = null;
+        onGroupPushed = null;
         db = FirebaseFirestore.getInstance();
 
         db = FirebaseFirestore.getInstance();
@@ -155,6 +157,9 @@ public class UserSession {
                 @Override
                 public void onSuccess(Void aVoid) {
                     setGroupListener();
+                    if (onGroupPushed != null) {
+                        onGroupPushed.onGroupPushed();
+                    }
                 }
             });
 
@@ -167,7 +172,7 @@ public class UserSession {
         db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                ShallowGroup shallowGroup = new ShallowGroup(name, documentReference.getId());
+                ShallowGroup shallowGroup = new ShallowGroup(documentReference.getId(),name);
                 groups.add(shallowGroup);
                 changeCurrentGroup(shallowGroup);
             }
@@ -247,8 +252,15 @@ public class UserSession {
         this.onGroupUpdated = onGroupUpdated;
     }
 
+    public void setOnGroupPushed(OnGroupPushed onGroupPushed) {
+        this.onGroupPushed = onGroupPushed;
+    }
+
     public void removeOnGroupUpdated() {
         this.onGroupUpdated = null;
+    }
+    public void removeOnGroupPushed(){
+        this.onGroupPushed = null;
     }
 
     public void removeOnExpensesUpdated() {
@@ -286,6 +298,11 @@ public class UserSession {
     public interface OnExpensePushed {
         public void onExpensePushed();
     }
+
+    public interface OnGroupPushed {
+        public void onGroupPushed();
+    }
+
 
     public interface OnGroupUpdated {
         public void onGroupUpdated(Group group);

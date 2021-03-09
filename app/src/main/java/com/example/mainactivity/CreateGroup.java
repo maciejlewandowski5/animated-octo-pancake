@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import model.Group;
 import model.GroupManager;
+import modelv2.UserSession;
 
 public class CreateGroup extends AppCompatActivity {
     private TextView textView;
@@ -38,31 +39,7 @@ public class CreateGroup extends AppCompatActivity {
 
     public void createGroup(View view) {
         if (textView.getText() != "" && textView.getText() != null) {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            GroupManager.getInstance().addGroup(code, textView.getText().toString(), GroupManager.getInstance().getCurrentGroup().getCurrentUser());
-            Group group = GroupManager.getInstance().getGroups().get(GroupManager.getInstance().getGroups().size() - 1);
-            group.addUser(GroupManager.getInstance().getCurrentGroup().getCurrentUser());
-            db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    group.setId(documentReference.getId());
-                    Map<String, Object> a = new HashMap<>();
-                    a.put(documentReference.getId(), group.getName());
-
-                    Map.Entry<String,Object> c = null;
-                    for(Map.Entry<String,Object> b : a.entrySet()){
-                        GroupManager.getInstance().getCurrentGroup().getCurrentUser().setCurrentGroupData(b);
-
-                    c = b;
-                    }
-                    GroupManager.getInstance().getCurrentGroup().getCurrentUser().addGroup(documentReference.getId(),group.getName());
-
-                    db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).update(GroupManager.getInstance().getCurrentGroup().getCurrentUser().toMap());
-                    MainActivity.refreshCurrentGroup(c);
-                    onBackPressed();
-                }
-            });
+            UserSession.getInstance().createNewGroup(textView.getText().toString(),code);
         }
     }
 
@@ -72,5 +49,22 @@ public class CreateGroup extends AppCompatActivity {
         shareIntent.putExtra(Intent.EXTRA_TEXT,"Join our group in exxpense with code: " + code);
         startActivity(Intent.createChooser(shareIntent, "Share..."));
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        UserSession.getInstance().setOnGroupPushed(new UserSession.OnGroupPushed() {
+            @Override
+            public void onGroupPushed() {
+                onBackPressed();
+            }
+        });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        UserSession.getInstance().removeOnGroupPushed();
     }
 }
