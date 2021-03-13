@@ -15,14 +15,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
-import model.Expense;
+import modelv2.Expense;
 
 
 public class PaymentListElement extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
-    private Expense expense;
+    private Expense
+            expense;
 
 
     public PaymentListElement() {
@@ -41,7 +42,7 @@ public class PaymentListElement extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            expense = (Expense) getArguments().getSerializable(ARG_PARAM1);
+            expense = (modelv2.Expense) getArguments().getSerializable(ARG_PARAM1);
 
         }
     }

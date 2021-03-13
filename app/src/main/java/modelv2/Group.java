@@ -64,6 +64,10 @@ public class Group implements Serializable {
         payers.add(new Payer(currentUser));
     }
 
+    public void addExpenseQuietly(Expense expense){
+        expenses.add(expense);
+    }
+
     //also can edit expenses
     public void addExpense(Expense expense) {
         if (!expenses.isEmpty()) {
@@ -123,7 +127,6 @@ public class Group implements Serializable {
 
     public void clearExpenses() {
         expenses.clear();
-        payers.forEach(Payer::clearDebts);
     }
 
     public ArrayList<Expense> getExpenses() {

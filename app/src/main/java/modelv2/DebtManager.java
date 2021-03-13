@@ -1,4 +1,4 @@
-package model;
+package modelv2;
 
 import android.app.Activity;
 
@@ -9,12 +9,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import model.Expense;
+import model.User;
+import modelv2.Debt;
+
 public class DebtManager {
     ArrayList<Debt> debts;
-    ArrayList<User> mUsers;
+    ArrayList<modelv2.User> mUsers;
 
 
     public DebtManager(DocumentSnapshot ds) {
@@ -28,7 +33,7 @@ public class DebtManager {
         Map<String, Object> borrowers = new HashMap<>();
         Map<String, Object> users = ((Map<String, Object>) ds.get("users"));
         for (Map.Entry<String, Object> payer : users.entrySet()) {
-            mUsers.add(new User((String) payer.getValue(), payer.getKey()));
+            mUsers.add(new modelv2.User((String) payer.getValue(), payer.getKey()));
             borrowers = ((Map<String, Object>) ds.getData().get(payer.getKey()));
             for (Map.Entry<String, Object> borrower : borrowers.entrySet()) {
                 try {
@@ -187,19 +192,19 @@ public class DebtManager {
         this.debts = debts;
     }
 
-    private User getUser(String id) {
-        for (User user : mUsers) {
+    private modelv2.User getUser(String id) {
+        for (modelv2.User user : mUsers) {
             if (user.getId().equals(id)) {
                 return user;
             }
         }
-        return new User("", "");
+        return new modelv2.User("", "");
     }
 
-    public ArrayList<Expense> getExpenses(Activity activity) {
-        ArrayList<Expense> expenses = new ArrayList<>();
+    public ArrayList<modelv2.Expense> getExpenses() {
+        ArrayList<modelv2.Expense> expenses = new ArrayList<>();
         for (Debt debt : debts) {
-            expenses.add(new Expense(debt.getAmount(), activity.getString(R.string.payback), getUser(debt.getFrom()), new ArrayList<User>(Arrays.asList(getUser(debt.getTo())))));
+            expenses.add(new modelv2.Expense( "Pay-back", (double) debt.getAmount(),new Date(), getUser(debt.getFrom()), new ArrayList<modelv2.User>(Arrays.asList(getUser(debt.getTo())))));
         }
         return expenses;
     }

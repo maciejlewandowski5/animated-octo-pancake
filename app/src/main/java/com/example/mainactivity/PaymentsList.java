@@ -26,24 +26,22 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executor;
 
-import model.DebtManager;
-import model.Expense;
+import modelv2.DebtManager;
 import model.Group;
 import model.GroupManager;
-import model.User;
+import modelv2.Expense;
+import modelv2.User;
+import modelv2.UserSession;
 
 public class PaymentsList extends AppCompatActivity {
 
     private static final String TAG = "s";
     Group group;
-    ArrayList<Expense> debts;
-    ArrayList<Expense> toPay;
+    ArrayList<modelv2.Expense> debts;
+    ArrayList<modelv2.Expense> toPay;
 
-    InfiniteScroller<Expense> infiniteScroller;
+    InfiniteScroller<modelv2.Expense> infiniteScroller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,19 +54,16 @@ public class PaymentsList extends AppCompatActivity {
         fragmentTransaction.replace(R.id.fragment, topBar);
         fragmentTransaction.commit();
 
-
-        group = GroupManager.getInstance().getCurrentGroup();
-        debts = (ArrayList<Expense>) group.getCurrentUserSuggestedPayDebtExpenses();
+        debts = new ArrayList<>();
         toPay = new ArrayList<>();
 
         LinearLayout container = findViewById(R.id.container);
 
-
-        infiniteScroller = new InfiniteScroller<Expense>(container, 29 + 9 + 29, new InfiniteScroller.SpecificOnClickListener() {
+        infiniteScroller = new InfiniteScroller<modelv2.Expense>(container, 29 + 9 + 29, new InfiniteScroller.SpecificOnClickListener() {
             @Override
             public void onClick(View view, Serializable object, int index) {
 
-                Expense expense = (Expense) object;
+                Expense expense = (modelv2.Expense) object;
                 CheckBox checkBox = ((CheckBox) ((ConstraintLayout) ((FrameLayout) ((ConstraintLayout) view.getParent())
                         .getChildAt(1))
                         .getChildAt(0))
@@ -96,49 +91,32 @@ public class PaymentsList extends AppCompatActivity {
         }, PaymentListElement::newInstance, this);
 
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        PaymentsList that = this;
-        db.collection("Groups").document(group.getId()).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Log.w(TAG, "Listen failed.", error);
-                    return;
-                }
-
-                if (value != null && value.exists()) {
-                    DebtManager debtManager = new DebtManager(value);
-                    debtManager.simplifyDebts();
-                    // debtManager.reduceDebts();
-                    debts = debtManager.getExpenses(that);
-                    infiniteScroller.populate(debts);
-
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-
-
-            }
-        });
     }
 
     public void evenChecked(View view) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        for(Expense expense:toPay) {
-            db.collection("Groups").document(group.getId()).collection("Expenses").add(expense.toMap())
-            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    db.collection("Groups").document(group.getId())
-                            .update(expense.getPayer().getId() + "." + expense.getBorrowers().get(0).getId(), FieldValue.increment(expense.getAmount()));
-                }
-            });
-        }
+        UserSession userSession = UserSession.getInstance();
+        //toPay.forEach(userSession::addExpense);
+        userSession.addExpenses(toPay,0);
         onBackPressed();
-        //toPay.forEach(item ->
-          //      db.collection("Groups")
-            //            .document(group.getId()).collection("Expenses").add(item));
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        UserSession.getInstance().setOnDebtUpdated(new UserSession.OnDeptUpdated() {
+            @Override
+            public void onDebtUpdated(ArrayList<modelv2.Expense> expenses) {
+                infiniteScroller.populate(expenses);
+            }
+        });
+        infiniteScroller.populate(UserSession.getInstance().getDebtExpenses());
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        UserSession.getInstance().removeOnDebtUpdated();
     }
 
     @Override

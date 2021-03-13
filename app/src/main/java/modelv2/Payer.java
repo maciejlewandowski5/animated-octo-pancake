@@ -1,5 +1,7 @@
 package modelv2;
 
+import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,11 +25,11 @@ public class Payer extends User implements Serializable {
     }
 
     public void addBorrower(User user, Double amount) {
-        if (!borrowers.contains(user.getId())) {
+        if (!borrowers.contains(user)) {
             borrowers.add(user);
             amounts.add(amount);
         } else {
-            int index = borrowers.indexOf(user.getId());
+            int index = borrowers.indexOf(user);
             double prv = amounts.get(index);
             amounts.set(index, prv + amount);
         }
@@ -65,5 +67,10 @@ public class Payer extends User implements Serializable {
             result += amount;
         }
         return  result;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return super.equals(obj);
     }
 }

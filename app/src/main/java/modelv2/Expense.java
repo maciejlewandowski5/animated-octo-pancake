@@ -47,6 +47,7 @@ public class Expense implements Serializable {
         this.borrowers = borrowers;
     }
 
+
     public User getPayer() {
         return payer;
     }

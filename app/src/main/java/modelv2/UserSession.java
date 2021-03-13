@@ -1,12 +1,9 @@
 package modelv2;
 
-import android.graphics.Point;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -37,6 +34,7 @@ public class UserSession {
     private boolean expensesListenerSet;
     private ListenerRegistration expenseListener;
     private Group currentGroup;
+    private DebtManager debtManager;
 
     private OnGroupUpdated onGroupUpdated;
     private OnExpensesUpdated onExpensesUpdated;
@@ -44,9 +42,10 @@ public class UserSession {
     private OnGroupPushed onGroupPushed;
     private OnJoinGroupError onJoinGroupError;
     private OnJoinGroupSuccess onJoinGroupSuccess;
-
+    private OnDeptUpdated onDebtUpdated;
 
     FirebaseFirestore db;
+
 
     private UserSession() {
         groupListenerSet = false;
@@ -56,6 +55,7 @@ public class UserSession {
         onGroupUpdated = null;
         onExpensesUpdated = null;
         onGroupPushed = null;
+        debtManager = null;
         db = FirebaseFirestore.getInstance();
 
         db = FirebaseFirestore.getInstance();
@@ -108,6 +108,11 @@ public class UserSession {
                     }
                     if (value != null && value.exists()) {
                         currentGroup = new Group(value);
+                        debtManager = new DebtManager(value);
+                        debtManager.simplifyDebts();
+                        if (onDebtUpdated != null) {
+                            onDebtUpdated.onDebtUpdated(debtManager.getExpenses());
+                        }
                         if (onGroupUpdated != null) {
                             onGroupUpdated.onGroupUpdated(currentGroup);
                         }
@@ -135,7 +140,7 @@ public class UserSession {
                     if (value != null) {
                         currentGroup.clearExpenses();
                         for (DocumentSnapshot ds : value.getDocuments()) {
-                            currentGroup.addExpense(new Expense(ds));
+                            currentGroup.addExpenseQuietly(new Expense(ds));
                         }
                         if (onExpensesUpdated != null) {
                             onExpensesUpdated.onExpensesUpdated(currentGroup.getExpenses());
@@ -175,7 +180,7 @@ public class UserSession {
         db.collection("Groups").add(group.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                ShallowGroup shallowGroup = new ShallowGroup(documentReference.getId(),name);
+                ShallowGroup shallowGroup = new ShallowGroup(documentReference.getId(), name);
                 groups.add(shallowGroup);
                 changeCurrentGroup(shallowGroup);
             }
@@ -188,17 +193,17 @@ public class UserSession {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
                     if (documentSnapshot != null && documentSnapshot.exists()) {
-                        ShallowGroup shallowGroup = new ShallowGroup(documentSnapshot.getId(),documentSnapshot.getString("name"));
+                        ShallowGroup shallowGroup = new ShallowGroup(documentSnapshot.getId(), documentSnapshot.getString("name"));
                         groups.add(shallowGroup);
                         changeCurrentGroup(shallowGroup);
                         Group group = new Group(documentSnapshot);
                         group.addUser(currentUser);
                         documentSnapshot.getReference().update(group.toMap());
-                        if(onJoinGroupSuccess!=null){
+                        if (onJoinGroupSuccess != null) {
                             onJoinGroupSuccess.onJoinGroupSuccess();
                         }
-                    }else{
-                        if(onJoinGroupError!=null){
+                    } else {
+                        if (onJoinGroupError != null) {
                             onJoinGroupError.onJoinGroupError();
                         }
                     }
@@ -207,16 +212,38 @@ public class UserSession {
         }
     }
 
-    public void addExpense(String name, double amount, Date date, User payer, ArrayList<User> borrowers) {
-        Expense expense = new Expense(name, amount, date, payer, borrowers);
+    public void addExpenses(ArrayList<Expense> expenses, int beginWithIndex) {
+        if (expenses.size() == beginWithIndex) {
+            return;
+        } else {
+            currentGroup.addExpense(expenses.get(beginWithIndex));
+            db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").add(expenses.get(beginWithIndex).toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            if (onExpensePushed != null) {
+                                onExpensePushed.onExpensePushed();
+                            }
+                            addExpenses(expenses, beginWithIndex + 1);
+                        }
+                    });
+                }
+            });
+        }
+
+    }
+
+
+    public void addExpense(Expense expense) {
         currentGroup.addExpense(expense);
-        db.collection("Groups").document(currentShallowGroup.getGroupId()).
-                collection("Expenses").add(expense.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onSuccess(DocumentReference documentReference) {
-                db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            public void onSuccess(Void aVoid) {
+                db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").add(expense.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
+                    public void onSuccess(DocumentReference documentReference) {
                         if (onExpensePushed != null) {
                             onExpensePushed.onExpensePushed();
                         }
@@ -226,13 +253,36 @@ public class UserSession {
         });
     }
 
-    public void editExpense(Expense expense) {
+
+    public void addExpense(String name, double amount, Date date, User payer, ArrayList<User> borrowers) {
+        Expense expense = new Expense(name, amount, date, payer, borrowers);
         currentGroup.addExpense(expense);
-        db.collection("Groups").document(currentShallowGroup.getGroupId()).
-                collection("Expenses").document(expense.getId()).update(expense.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+
+        db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                db.collection("Groups").document(currentShallowGroup.getGroupId()).
+                        collection("Expenses").add(expense.toMap()).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        if (onExpensePushed != null) {
+                            onExpensePushed.onExpensePushed();
+                        }
+                    }
+                });
+
+            }
+        });
+
+    }
+
+    public void editExpense(Expense expense) {
+        currentGroup.addExpense(expense);
+        db.collection("Groups").document(currentShallowGroup.getGroupId()).update(currentGroup.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                db.collection("Groups").document(currentShallowGroup.getGroupId()).
+                        collection("Expenses").document(expense.getId()).update(expense.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         if (onExpensePushed != null) {
@@ -269,7 +319,8 @@ public class UserSession {
     public void removeOnGroupUpdated() {
         this.onGroupUpdated = null;
     }
-    public void removeOnGroupPushed(){
+
+    public void removeOnGroupPushed() {
         this.onGroupPushed = null;
     }
 
@@ -281,11 +332,15 @@ public class UserSession {
         this.onJoinGroupSuccess = onJoinGroupSuccess;
     }
 
+    public void setOnDebtUpdated(OnDeptUpdated onDebtUpdated) {
+        this.onDebtUpdated = onDebtUpdated;
+    }
+
     public void removeOnExpensesUpdated() {
         this.onExpensesUpdated = null;
     }
 
-    public void removeOnJoinGroupError(){
+    public void removeOnJoinGroupError() {
         this.onJoinGroupError = null;
     }
 
@@ -297,12 +352,20 @@ public class UserSession {
         this.onJoinGroupSuccess = null;
     }
 
+    public void removeOnDebtUpdated() {
+        this.onDebtUpdated = null;
+    }
+
     public User getCurrentUser() {
         return currentUser;
     }
 
     public Group getCurrentGroup() {
         return currentGroup;
+    }
+
+    public ArrayList<Expense> getDebtExpenses() {
+        return debtManager.getExpenses();
     }
 
     public void setOnExpensesUpdated(OnExpensesUpdated onExpensesUpdated) {
@@ -344,5 +407,9 @@ public class UserSession {
 
     public interface OnJoinGroupSuccess {
         public void onJoinGroupSuccess();
+    }
+
+    public interface OnDeptUpdated {
+        public void onDebtUpdated(ArrayList<Expense> expenses);
     }
 }
