@@ -15,17 +15,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.DocumentSnapshot;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import model.User;
+import modelv2.User;
+import modelv2.UserSession;
 
 public class AccountHelper {
     private FirebaseAuth firebaseAuth;
@@ -51,10 +52,11 @@ public class AccountHelper {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 Log.w(tag, "Signed out of google");
-                Intent intent = new Intent(activity.getApplicationContext(), MainActivity.class);
+                // Intent intent = new Intent(activity.getApplicationContext(), MainActivity.class);
                 Toast.makeText(activity.getApplicationContext(), "You Signed out", Toast.LENGTH_LONG).show();
                 Utils.toastMessage("You Signed out", activity);
-                activity.startActivity(intent);
+                activity.finish();
+                //   activity.startActivity(intent);
             }
         });
     }
@@ -82,7 +84,7 @@ public class AccountHelper {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            Utils.toastMessage(activity.getString(R.string.you_logged_in) + task.getException(), activity);
+            Utils.toastMessage(activity.getString(R.string.you_logged_in) + task.getResult().getDisplayName(), activity);
             assert account != null;
             firebaseAuthWithGoogle(account, tag);
         } catch (ApiException e) {
@@ -106,11 +108,11 @@ public class AccountHelper {
                     if (user != null) {
                         if (signInSuccessful != null) {
 
-                            if(task.getResult().getAdditionalUserInfo().isNewUser()){
-                                User user1 = new User(user.getUid(),user.getDisplayName());
-                                user1.setId(user.getUid());
-                                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                                db.collection("Users").document(user.getUid()).set(user1.toMap());
+                            if (task.getResult().getAdditionalUserInfo().isNewUser()) {
+                                FirebaseFirestore.getInstance().collection("Users").
+                                        document(user.getUid()).
+                                        set(UserSession.CreateNewUser(user.getDisplayName(), user.getUid()));
+
                             }
 
                             signInSuccessful.signInSuccessful(user);//launchStartActivity(user);

@@ -3,10 +3,8 @@ package com.example.mainactivity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,17 +13,8 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-
 import java.util.Map;
 
-import model.Group;
-import model.GroupManager;
-import model.User;
 import modelv2.ShallowGroup;
 import modelv2.UserSession;
 
@@ -33,7 +22,6 @@ import modelv2.UserSession;
 public class TopBar extends Fragment {
 
     private static final String ARG_PARAM2 = "param2";
-    private static final String TAG = "TopBar";
 
     RefreshCurrentGroup refreshCurrentGroup;
 
@@ -89,6 +77,7 @@ public class TopBar extends Fragment {
                         popupMenu.getMenu().add(group.getGroupName());
                     }
                 }
+                popupMenu.getMenu().add(R.string.logout);
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -100,6 +89,8 @@ public class TopBar extends Fragment {
                         } else if (itemTitle.equals(getString(R.string.create_new_group))) {
                             Intent intent = new Intent(getActivity(), CreateGroup.class);
                             requireActivity().startActivity(intent);
+                        }else if(itemTitle.equals(getString(R.string.logout))){
+                            MainActivity.signOut();
                         } else {
                             ShallowGroup tmp = null;
                             for (ShallowGroup group : userSession.getGroups()) {
@@ -111,7 +102,6 @@ public class TopBar extends Fragment {
                             }
                             if (tmp != null) {
                                 userSession.changeCurrentGroup(tmp);
-                                System.out.println("Called " + tmp.getGroupName());
                             }
                         }
                         return false;

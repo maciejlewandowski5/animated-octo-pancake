@@ -1,6 +1,6 @@
 package com.example.mainactivity;
 
-import androidx.annotation.Nullable;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -8,36 +8,26 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
+
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.example.mainactivity.helpers.InfiniteScroller;
-import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import modelv2.DebtManager;
-import model.Group;
-import model.GroupManager;
 import modelv2.Expense;
-import modelv2.User;
+
 import modelv2.UserSession;
 
 public class PaymentsList extends AppCompatActivity {
 
     private static final String TAG = "s";
-    Group group;
     ArrayList<modelv2.Expense> debts;
     ArrayList<modelv2.Expense> toPay;
 

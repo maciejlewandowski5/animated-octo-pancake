@@ -1,10 +1,7 @@
 package modelv2;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 
-import com.example.mainactivity.R;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -12,10 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import model.Expense;
-import model.User;
-import modelv2.Debt;
 
 public class DebtManager {
     ArrayList<Debt> debts;

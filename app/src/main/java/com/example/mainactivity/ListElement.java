@@ -12,8 +12,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import model.Expense;
-
 
 public class ListElement extends Fragment {
 

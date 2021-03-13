@@ -6,21 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import org.apache.commons.lang3.RandomStringUtils;
-
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-
-import model.Group;
-import model.GroupManager;
 import modelv2.UserSession;
 
 public class CreateGroup extends AppCompatActivity {

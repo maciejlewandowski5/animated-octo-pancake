@@ -4,62 +4,35 @@ package com.example.mainactivity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.Point;
-import android.media.MediaDrm;
+
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
+
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
 
 import com.example.mainactivity.helpers.AccountHelper;
 import com.example.mainactivity.helpers.ImageViewResizeAnimation;
 import com.example.mainactivity.helpers.InfiniteScroller;
 import com.example.mainactivity.helpers.Utils;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
+
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.Source;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
-import model.Group;
-import model.GroupManager;
-import model.User;
 import modelv2.Expense;
-import modelv2.ShallowGroup;
+
 import modelv2.UserSession;
 
 public class MainActivity extends AppCompatActivity {
@@ -73,10 +46,13 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout container;
     private int id = 0;
 
-    private AccountHelper accountHelper;
+    private static AccountHelper accountHelper;
     private InfiniteScroller<modelv2.Expense> infiniteScroller;
     private UserSession userSession;
 
+    public static void signOut() {
+        accountHelper.signOut(TAG);
+    }
 
 
     @Override
@@ -151,11 +127,18 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
+        MainActivity that = this;
         accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
             @Override
             public void signInSuccessful(FirebaseUser user) {
                 userSession = UserSession.getInstance();
-
+                userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
+                    @Override
+                    public void onCurrentGroupNull() {
+                        Intent intent = new Intent(that,CreateGroup.class);
+                        startActivity(intent);
+                    }
+                });
                 userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
                     @Override
                     public void onGroupUpdated(modelv2.Group group) {
@@ -204,5 +187,9 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         //userSession.removeOnGroupUpdated();
         //userSession.removeOnExpensesUpdated();
+    }
+
+    public void logout(View view) {
+        accountHelper.signOut(TAG);
     }
 }

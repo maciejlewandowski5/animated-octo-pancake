@@ -43,6 +43,7 @@ public class UserSession {
     private OnJoinGroupError onJoinGroupError;
     private OnJoinGroupSuccess onJoinGroupSuccess;
     private OnDeptUpdated onDebtUpdated;
+    private OnCurrentGroupNull onCurrentGroupNull;
 
     FirebaseFirestore db;
 
@@ -55,6 +56,7 @@ public class UserSession {
         onGroupUpdated = null;
         onExpensesUpdated = null;
         onGroupPushed = null;
+        onCurrentGroupNull = null;
         debtManager = null;
         db = FirebaseFirestore.getInstance();
 
@@ -67,7 +69,10 @@ public class UserSession {
                     currentUser = new User(documentSnapshot.getString("name"), documentSnapshot.getId());
                     try {
                         currentShallowGroup = new ShallowGroup((Map<String, Object>) documentSnapshot.getData().get("currentGroup"));
-
+                        if (currentShallowGroup.groupId == null && onCurrentGroupNull != null) {
+                            onCurrentGroupNull.onCurrentGroupNull();
+                            return;
+                        }
                         ((Map<String, Object>) documentSnapshot.getData().get("groups")).forEach((k, v) -> {
                             groups.add(new ShallowGroup(k, (String) v));
                         });
@@ -88,6 +93,16 @@ public class UserSession {
         return currentSession;
     }
 
+    public static Map<String, Object> CreateNewUser(String name, String newUserId) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", name);
+        Map<String, Object> nested = new HashMap<>();
+        result.put("groups", nested);
+        result.put("currentGroup", nested);
+        return result;
+    }
+
+
     public ShallowGroup getCurrentShallowGroup() {
         return currentShallowGroup;
     }
@@ -106,6 +121,8 @@ public class UserSession {
                         Log.w(TAG, "Listen failed.", error);
                         return;
                     }
+
+
                     if (value != null && value.exists()) {
                         currentGroup = new Group(value);
                         debtManager = new DebtManager(value);
@@ -295,13 +312,17 @@ public class UserSession {
     }
 
     private void removeGroupListener() {
-        groupListener.remove();
-        groupListenerSet = false;
+        if (groupListenerSet) {
+            groupListener.remove();
+            groupListenerSet = false;
+        }
     }
 
     private void removeExpenseListener() {
-        expenseListener.remove();
-        this.expensesListenerSet = false;
+        if (expensesListenerSet) {
+            expenseListener.remove();
+            this.expensesListenerSet = false;
+        }
     }
 
     public void setOnExpensePushed(OnExpensePushed onExpensePushed) {
@@ -336,6 +357,10 @@ public class UserSession {
         this.onDebtUpdated = onDebtUpdated;
     }
 
+    public void setOnCurrentGroupNull(OnCurrentGroupNull onCurrentGroupNull) {
+        this.onCurrentGroupNull = onCurrentGroupNull;
+    }
+
     public void removeOnExpensesUpdated() {
         this.onExpensesUpdated = null;
     }
@@ -354,6 +379,10 @@ public class UserSession {
 
     public void removeOnDebtUpdated() {
         this.onDebtUpdated = null;
+    }
+
+    public void removeOnCurrentDataNull() {
+        this.onCurrentGroupNull = null;
     }
 
     public User getCurrentUser() {
@@ -411,5 +440,9 @@ public class UserSession {
 
     public interface OnDeptUpdated {
         public void onDebtUpdated(ArrayList<Expense> expenses);
+    }
+
+    public interface OnCurrentGroupNull {
+        public void onCurrentGroupNull();
     }
 }

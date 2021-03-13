@@ -47,7 +47,8 @@ public class ShallowGroup implements Serializable {
 
     Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
-        result.put(groupId,groupName);
-        return result;
+        if(groupId!=null) {
+            result.put(groupId, groupName);
+        }return result;
     }
 }

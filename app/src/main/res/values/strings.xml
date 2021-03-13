@@ -32,5 +32,6 @@
     <string name="login_failed">Login failed</string>
     <string name="payback">Pay-back</string>
     <string name="to">to</string>
+    <string name="logout">Logout</string>
 
 </resources>
