@@ -23,8 +23,10 @@ public class JoinGroup extends AppCompatActivity {
     }
 
     public void joinGroup(View view) {
-        if (!textView.getText().toString().equals("") && textView.getText() != null) {
+        if (!textView.getText().toString().isEmpty()) {
             UserSession.getInstance().joinGroup(textView.getText().toString());
+        }else{
+            Utils.toastMessage(getString(R.string.provide_gorup_code),this);
         }
     }
 

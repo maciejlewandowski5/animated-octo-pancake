@@ -22,12 +22,14 @@ import android.widget.TextView;
 import com.example.mainactivity.helpers.DecimalDigitsInputFilter;
 import com.example.mainactivity.helpers.Utils;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
 import modelv2.UserSession;
 
 public class ExpenseEditor extends AppCompatActivity {
@@ -179,7 +181,7 @@ public class ExpenseEditor extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             Fragment fragment = BorrowerFragment.newInstance(borrower);
             fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.fade_out);
-            fragmentTransaction.add(container.getId(), fragment, borrower.getName());//TODO::change for ID
+            fragmentTransaction.add(container.getId(), fragment, borrower.getName());
             fragmentTransaction.commit();
         }
     }
@@ -251,18 +253,21 @@ public class ExpenseEditor extends AppCompatActivity {
     }
 
     public void sendExpense(View view) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
         String name = ((TextView) findViewById(R.id.editTextTextPersonName)).getText().toString();
+        if (!amount.getText().toString().isEmpty() && !name.isEmpty() && !borrowers.isEmpty() && payer != null && calendar.getTime() != null) {
+            float price = Float.parseFloat(amount.getText().toString().replace(",", "."));
 
-        if (expense == null) {
-            userSession.addExpense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
-        }else {
-            modelv2.Expense expense1 = new modelv2.Expense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
-            expense1.setId(expense.getId());
-            userSession.editExpense(expense1);
+            if (expense == null) {
+                userSession.addExpense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
+            } else {
+                modelv2.Expense expense1 = new modelv2.Expense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
+                expense1.setId(expense.getId());
+                userSession.editExpense(expense1);
+            }
+            onBackPressed();
+        }else{
+            Utils.toastMessage(getString(R.string.please_fill), this);
         }
-        onBackPressed();
     }
 
     @Override

@@ -22,8 +22,7 @@ public class PaymentListElement extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
-    private Expense
-            expense;
+    private Expense expense;
 
 
     public PaymentListElement() {
@@ -50,7 +49,8 @@ public class PaymentListElement extends Fragment {
     private void expenseFormatter(TextView amount, TextView userName,ImageView circle, TextView borrowerName) {
         DecimalFormat format = new DecimalFormat("#.##");
         amount.setText(format.format(expense.getAmount()));
-        userName.setText(expense.getPayer().getName());
+        String userNameString =expense.getPayer().getName();//.substring(0,8)+"...";
+        userName.setText(userNameString);
         borrowerName.setText(expense.getBorrowers().get(0).getName());
         if(expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
             circle.setImageResource(R.drawable.circle_red);

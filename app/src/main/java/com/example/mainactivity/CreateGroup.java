@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+
+import com.example.mainactivity.helpers.Utils;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import modelv2.UserSession;
 
@@ -24,8 +27,10 @@ public class CreateGroup extends AppCompatActivity {
     }
 
     public void createGroup(View view) {
-        if (textView.getText() != "" && textView.getText() != null) {
+        if (!textView.getText().toString().isEmpty()) {
             UserSession.getInstance().createNewGroup(textView.getText().toString(),code);
+        }else{
+            Utils.toastMessage(getString(R.string.privide_goroup_name), this);
         }
     }
 

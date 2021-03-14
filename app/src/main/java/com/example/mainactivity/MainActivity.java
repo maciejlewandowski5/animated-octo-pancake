@@ -25,6 +25,7 @@ import com.example.mainactivity.helpers.ImageViewResizeAnimation;
 import com.example.mainactivity.helpers.InfiniteScroller;
 import com.example.mainactivity.helpers.Utils;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.io.Serializable;
@@ -71,6 +72,67 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent, options.toBundle());
             }
         }, ListElement::newInstance, this);
+
+        accountHelper = new AccountHelper(this);
+        accountHelper.configureGoogleClient();
+        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
+            @Override
+            public void signInSuccessful(FirebaseUser user) {
+                userSession = UserSession.getInstance();
+                userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
+                    @Override
+                    public void onCurrentGroupNull() {
+                        Intent intent = new Intent(that, CreateGroup.class);
+                        startActivity(intent);
+                    }
+                });
+                userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
+                    @Override
+                    public void onGroupUpdated(modelv2.Group group) {
+                        Point size = new Point();
+                        getWindowManager().getDefaultDisplay().getRealSize(size);
+                        float total = 0;
+                        try {
+                            total = group.getTotal(UserSession.getInstance().getCurrentUser());
+                        } catch (IllegalArgumentException e) {
+                            total = 0f;
+                        }
+                        float absoluteTotal = group.getAbsoluteTotal();
+
+                        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
+                        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
+                                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
+                                finalWidth, ratioBar.getLayoutParams().height);
+                        ratioBar.setAnimation(anim);
+                        ratioBar.getLayoutParams().width = finalWidth;
+                        if (total/absoluteTotal*100>66) {
+                            ratioBar.setImageResource(R.drawable.background_accent_variant);
+                        } else if (total/absoluteTotal*100<33) {
+                            ratioBar.setImageResource(R.drawable.background_accent);
+                        } else {
+                            ratioBar.setImageResource(R.drawable.background_teal);
+                        }
+                        totalAmount.setText(Utils.formatPriceLocale(total));
+
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        TopBar topBar = TopBar.newInstance(true);
+                        // fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+                        fragmentTransaction.replace(id, topBar);
+                        fragmentTransaction.commit();
+                        id = topBar.getId();
+                    }
+                });
+                userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
+                    @Override
+                    public void onExpensesUpdated(ArrayList<Expense> expenses) {
+                        infiniteScroller.populate(expenses);
+                    }
+                });
+            }
+        });
+        accountHelper.signInUsingGoogle();
+
     }
 
     public static void refreshCurrentGroup(Map.Entry<String, Object> group) {
@@ -92,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void initializeViews(){
+    private void initializeViews() {
         container = findViewById(R.id.container);
         history = findViewById(R.id.history_container);
         totalAmount = findViewById(R.id.textView4);
@@ -125,61 +187,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        accountHelper = new AccountHelper(this);
-        accountHelper.configureGoogleClient();
-        MainActivity that = this;
-        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
-            @Override
-            public void signInSuccessful(FirebaseUser user) {
-                userSession = UserSession.getInstance();
-                userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
-                    @Override
-                    public void onCurrentGroupNull() {
-                        Intent intent = new Intent(that,CreateGroup.class);
-                        startActivity(intent);
-                    }
-                });
-                userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
-                    @Override
-                    public void onGroupUpdated(modelv2.Group group) {
-                        Point size = new Point();
-                        getWindowManager().getDefaultDisplay().getRealSize(size);
-                        float total = 0;
-                        try {
-                           total = group.getTotal(user.getUid());
-                        }catch (IllegalArgumentException e) {
-                            total = 0f;
-                        }
-                        float absoluteTotal = group.getAbsoluteTotal();
-
-                        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
-                        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
-                                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
-                                finalWidth, ratioBar.getLayoutParams().height);
-                        ratioBar.setAnimation(anim);
-                        ratioBar.getLayoutParams().width = finalWidth;
-                        totalAmount.setText(Utils.formatPriceLocale(total));
-
-
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        TopBar topBar = TopBar.newInstance(true);
-                        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
-                        fragmentTransaction.replace(id, topBar);
-                        fragmentTransaction.commit();
-                        id = topBar.getId();
-                    }
-                });
-                userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
-                    @Override
-                    public void onExpensesUpdated(ArrayList<Expense> expenses) {
-                        infiniteScroller.populate(expenses);
-                    }
-                });
-
-            }
-        });
-        accountHelper.signInUsingGoogle();
     }
 
     @Override

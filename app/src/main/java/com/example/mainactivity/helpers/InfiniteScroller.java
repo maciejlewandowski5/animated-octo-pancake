@@ -39,18 +39,18 @@ public class InfiniteScroller<T extends Serializable> {
     }
 
     private void clean(){
-        Animation anim = AnimationUtils.makeOutAnimation(app.getApplicationContext(),true);
+        Animation anim = AnimationUtils.makeInChildBottomAnimation(app.getApplicationContext());//makeOutAnimation(app.getApplicationContext(),true);
         anim.setInterpolator(new AccelerateInterpolator());
         anim.setDuration(100);
         anim.setFillAfter(true);
-        new Handler().postDelayed(new Runnable() { // Not with Animation listner becouse it is not realible for many objects
-            public void run() {
-                container.clearAnimation();
+     //   new Handler().postDelayed(new Runnable() { // Not with Animation listner becouse it is not realible for many objects
+      //      public void run() {
+    //            container.clearAnimation();
                 container.removeAllViews();
                 populateWithItems();
-            }
-        }, anim.getDuration()+10);
-        container.startAnimation(anim);
+       //     }
+     //   }, anim.getDuration()+10);
+      //  container.startAnimation(anim);
     }
 
 
@@ -59,19 +59,7 @@ public class InfiniteScroller<T extends Serializable> {
         for (T item : items) {
 
             FragmentTransaction transaction = app.getSupportFragmentManager().beginTransaction();
-            transaction.setCustomAnimations(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-
-
-            /*if (i % 3 == 0) {
-                transaction.setCustomAnimations(R.anim.pop_enter_1,
-                        android.R.anim.slide_out_right);
-            } else if (i%3==1) {
-                transaction.setCustomAnimations(R.anim.pop_enter,
-                        android.R.anim.slide_out_right);
-            } else{
-                transaction.setCustomAnimations(R.anim.pop_enter_2,
-                        android.R.anim.slide_out_right);
-            }*/
+            //transaction.setCustomAnimations(android.R.anim.fade_in,android.R.anim.fade_out);
 
             ConstraintLayout constraintLayout = new ConstraintLayout(app);
             Fragment fragment = factory.newInstance(item, i);

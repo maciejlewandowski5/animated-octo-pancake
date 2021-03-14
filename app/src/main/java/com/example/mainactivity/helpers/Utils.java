@@ -37,11 +37,11 @@ public class Utils {
 
 
     public static void toastError(Context context) {
-        Toast.makeText(context, "Something went wrong", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show();
     }
 
     public static void toastMessage(String message, Context context) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 
 

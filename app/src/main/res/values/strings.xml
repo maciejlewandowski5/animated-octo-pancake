@@ -33,5 +33,8 @@
     <string name="payback">Pay-back</string>
     <string name="to">to</string>
     <string name="logout">Logout</string>
+    <string name="privide_goroup_name">Please provide group name</string>
+    <string name="provide_gorup_code">Please provide group code</string>
+    <string name="please_fill">Please provide fill all inputs</string>
 
 </resources>

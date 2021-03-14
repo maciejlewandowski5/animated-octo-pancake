@@ -97,9 +97,9 @@ public class Group implements Serializable {
     }
 
 
-    public float getTotal(String userId) {
-        if (payers.contains(userId)) {
-            return payers.get(payers.indexOf(userId)).getTotal();
+    public float getTotal(User user) {
+        if (payers.contains(user)) {
+            return payers.get(payers.indexOf(user)).getTotal();
         } else throw new IllegalArgumentException("user with this id not in the group");
     }
 
