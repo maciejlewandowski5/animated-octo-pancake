@@ -59,7 +59,7 @@ public class InfiniteScroller<T extends Serializable> {
         for (T item : items) {
 
             FragmentTransaction transaction = app.getSupportFragmentManager().beginTransaction();
-            //transaction.setCustomAnimations(android.R.anim.fade_in,android.R.anim.fade_out);
+          //  transaction.setCustomAnimations(android.R.anim.fade_in,android.R.anim.fade_out);
 
             ConstraintLayout constraintLayout = new ConstraintLayout(app);
             Fragment fragment = factory.newInstance(item, i);

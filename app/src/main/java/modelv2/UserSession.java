@@ -146,7 +146,7 @@ public class UserSession {
     private void setExpenseListener() {
         if (!expensesListenerSet) {
             db = FirebaseFirestore.getInstance();
-            expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").limit(20).orderBy("dateTime", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").limit(8).orderBy("dateTime", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                     if (error != null) {

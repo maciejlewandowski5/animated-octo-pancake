@@ -9,12 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MainActivity">
-        <activity android:name="com.example.mainactivity.CreateGroup"></activity>
-        <activity android:name="com.example.mainactivity.JoinGroup" />
-        <activity android:name="com.example.mainactivity.PaymentsList" />
-        <activity android:name="com.example.mainactivity.ExpenseEditor" />
+        <activity android:name=".Share"></activity>
+        <activity android:name=".CreateGroup" />
+        <activity android:name=".JoinGroup" />
+        <activity android:name=".PaymentsList" />
+        <activity android:name=".ExpenseEditor" />
         <activity
-            android:name="com.example.mainactivity.MainActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

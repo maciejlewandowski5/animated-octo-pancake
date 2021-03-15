@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         TopBar topBar = TopBar.newInstance(true);
-                        // fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+                         fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
                         fragmentTransaction.replace(id, topBar);
                         fragmentTransaction.commit();
                         id = topBar.getId();

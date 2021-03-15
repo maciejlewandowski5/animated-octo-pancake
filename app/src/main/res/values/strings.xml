@@ -36,5 +36,10 @@
     <string name="privide_goroup_name">Please provide group name</string>
     <string name="provide_gorup_code">Please provide group code</string>
     <string name="please_fill">Please provide fill all inputs</string>
+    <string name="share_group">Share group</string>
+    <string name="invite_to_group">Invite to group</string>
+    <string name="invite_collaborators_with_qrcode">Invite collaborators with QRCode</string>
+    <string name="or_with_token">or with token</string>
+    <string name="or_share_code">or share code</string>
 
 </resources>

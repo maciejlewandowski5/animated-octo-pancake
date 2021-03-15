@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:context=".TopBar"
+    android:minHeight="50dp"
     android:background="@color/transparent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -23,7 +24,7 @@
             style="@style/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/set_name_for_group"
+            android:text=""
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -33,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="@string/example_code"
+            android:text=""
             android:textAllCaps="false"
             app:layout_constraintStart_toStartOf="@+id/title"
             app:layout_constraintTop_toBottomOf="@+id/title" />

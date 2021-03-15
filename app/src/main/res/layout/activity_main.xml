@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:minHeight="110dp"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -42,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
-            android:text="@string/_0"
+            android:text=""
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView3" />
@@ -127,11 +128,16 @@
                 android:layout_marginStart="33dp"
                 android:layout_marginEnd="33dp">
 
-                <fragment
-                    android:id="@+id/fragment2"
-                    android:name="com.example.mainactivity.ListElement"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/animation_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                app:lottie_fileName="if30_editor_x4rrdiwp.json"
+                app:lottie_loop="true"
+               app:lottie_autoPlay="true" />
+
+
+
             </LinearLayout>
         </ScrollView>
 
@@ -142,6 +148,7 @@
             android:layout_marginEnd="40dp"
             android:layout_marginBottom="40dp"
             android:clickable="true"
+
             android:onClick="addExpense"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"

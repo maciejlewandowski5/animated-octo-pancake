@@ -72,6 +72,7 @@ public class TopBar extends Fragment {
                 PopupMenu popupMenu = new PopupMenu(getActivity(), menuIcon);
                 popupMenu.getMenu().add(R.string.join_new_group);
                 popupMenu.getMenu().add(R.string.create_new_group);
+                popupMenu.getMenu().add(getString(R.string.share_group));
                 for (ShallowGroup group : userSession.getGroups()) {
                     if (!group.getGroupId().equals(userSession.getCurrentShallowGroup().getGroupId())) {
                         popupMenu.getMenu().add(group.getGroupName());
@@ -89,7 +90,15 @@ public class TopBar extends Fragment {
                         } else if (itemTitle.equals(getString(R.string.create_new_group))) {
                             Intent intent = new Intent(getActivity(), CreateGroup.class);
                             requireActivity().startActivity(intent);
-                        }else if(itemTitle.equals(getString(R.string.logout))){
+                        }else if (itemTitle.equals(getString(R.string.share_group))){
+                               // Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                               // shareIntent.setType("text/plain");
+                               // shareIntent.putExtra(Intent.EXTRA_TEXT,userSession.getCurrentGroup().getId());
+                              //  requireActivity().startActivity(Intent.createChooser(shareIntent, "Share..."));
+                                Intent intent = new Intent(requireActivity(),Share.class);
+                                requireActivity().startActivity(intent);
+                        }
+                        else if(itemTitle.equals(getString(R.string.logout))){
                             MainActivity.signOut();
                         } else {
                             ShallowGroup tmp = null;
