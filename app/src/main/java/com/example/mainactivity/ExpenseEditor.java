@@ -73,8 +73,8 @@ public class ExpenseEditor extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_expense_editor);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_expense_editor);
         Intent intent = getIntent();
         expense = (modelv2.Expense) intent.getSerializableExtra(EXPENSE);
 
