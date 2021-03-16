@@ -5,7 +5,13 @@
         <item name="colorPrimary">@color/grey</item>
         <item name="colorPrimaryDark">@color/dark_grey</item>
         <item name="colorAccent">@color/teal</item>
-        <item name="android:windowFullscreen">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.MyDialog" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">false</item>
     </style>
 </resources>

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.example.mainactivity.helpers.Utils;
@@ -20,6 +21,7 @@ public class CreateGroup extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_create_group);
         code = RandomStringUtils.randomAlphanumeric(5,7);
         ((TextView)findViewById(R.id.textView11)).setText(code);

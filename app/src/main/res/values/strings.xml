@@ -41,5 +41,7 @@
     <string name="invite_collaborators_with_qrcode">Invite collaborators with QRCode</string>
     <string name="or_with_token">or with token</string>
     <string name="or_share_code">or share code</string>
+    <string name="see_all">see all</string>
+    <string name="see_all_underscore">&lt;u&gt;see all&lt;/u&gt;</string>
 
 </resources>

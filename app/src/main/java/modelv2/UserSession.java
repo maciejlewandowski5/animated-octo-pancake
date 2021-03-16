@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.mainactivity.helpers.ExpandableInfiniteScroller;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -35,9 +36,13 @@ public class UserSession {
     private ListenerRegistration expenseListener;
     private Group currentGroup;
     private DebtManager debtManager;
+    private DocumentSnapshot lasExpenseDocumentSpanshot;
+    private int expensesToRead;
+
 
     private OnGroupUpdated onGroupUpdated;
     private OnExpensesUpdated onExpensesUpdated;
+    private OnExtraExpensesUpdated onExtraExpensesUpdated;
     private OnExpensePushed onExpensePushed;
     private OnGroupPushed onGroupPushed;
     private OnJoinGroupError onJoinGroupError;
@@ -59,6 +64,7 @@ public class UserSession {
         onCurrentGroupNull = null;
         debtManager = null;
         db = FirebaseFirestore.getInstance();
+        expensesToRead = 8;
 
         db = FirebaseFirestore.getInstance();
         db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -102,6 +108,13 @@ public class UserSession {
         return result;
     }
 
+    public void setExpensesToRead(int expensesToRead) {
+        this.expensesToRead = expensesToRead;
+    }
+
+    public int getExpensesToRead() {
+        return expensesToRead;
+    }
 
     public ShallowGroup getCurrentShallowGroup() {
         return currentShallowGroup;
@@ -146,7 +159,8 @@ public class UserSession {
     private void setExpenseListener() {
         if (!expensesListenerSet) {
             db = FirebaseFirestore.getInstance();
-            expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").limit(8).orderBy("dateTime", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
+
+            expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").limit(expensesToRead).orderBy("dateTime", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                     if (error != null) {
@@ -157,6 +171,7 @@ public class UserSession {
                         currentGroup.clearExpenses();
                         for (DocumentSnapshot ds : value.getDocuments()) {
                             currentGroup.addExpenseQuietly(new Expense(ds));
+                            lasExpenseDocumentSpanshot = ds;
                         }
                         if (onExpensesUpdated != null) {
                             onExpensesUpdated.onExpensesUpdated(currentGroup.getExpenses());
@@ -166,11 +181,41 @@ public class UserSession {
             });
             expensesListenerSet = true;
         }
+
+    }
+
+    public void extendExpenseListeners() {
+        if (expensesListenerSet) {
+            if (lasExpenseDocumentSpanshot != null) {
+                db = FirebaseFirestore.getInstance();
+                expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").orderBy("dateTime", Query.Direction.DESCENDING).limit(expensesToRead).startAfter(lasExpenseDocumentSpanshot).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.w(TAG, "Listen failed.", error);
+                            return;
+                        }
+                        if (value != null) {
+                            ArrayList<Expense> newExpenses = new ArrayList<>();
+                            for (DocumentSnapshot ds : value.getDocuments()) {
+                                Expense expense = new Expense(ds);
+                                currentGroup.addExpenseQuietly(expense);
+                                newExpenses.add(expense);
+                                lasExpenseDocumentSpanshot = ds;
+                            }
+                            if (onExtraExpensesUpdated != null) {
+                                onExtraExpensesUpdated.onExtraExpensesUpdated(newExpenses);
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 
 
-
     public void changeCurrentGroup(ShallowGroup shallowGroup) {
+        lasExpenseDocumentSpanshot = null;
         if (groups.contains(shallowGroup)) {
             this.removeGroupListener();
             this.removeExpenseListener();
@@ -364,6 +409,9 @@ public class UserSession {
     public void removeOnExpensesUpdated() {
         this.onExpensesUpdated = null;
     }
+    public void removeOnExtraExpensesUpdated() {
+        this.onExtraExpensesUpdated = null;
+    }
 
     public void removeOnJoinGroupError() {
         this.onJoinGroupError = null;
@@ -400,6 +448,9 @@ public class UserSession {
     public void setOnExpensesUpdated(OnExpensesUpdated onExpensesUpdated) {
         this.onExpensesUpdated = onExpensesUpdated;
     }
+    public void setOnExtraExpensesUpdated(OnExtraExpensesUpdated onExtraExpensesUpdated) {
+        this.onExtraExpensesUpdated = onExtraExpensesUpdated;
+    }
 
     private Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
@@ -428,6 +479,9 @@ public class UserSession {
 
     public interface OnExpensesUpdated {
         public void onExpensesUpdated(ArrayList<Expense> expenses);
+    }
+    public interface OnExtraExpensesUpdated {
+        public void onExtraExpensesUpdated(ArrayList<Expense> expenses);
     }
 
     public interface OnJoinGroupError {

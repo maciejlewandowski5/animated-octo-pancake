@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -73,7 +74,7 @@ public class ExpenseEditor extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_expense_editor);
-
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         Intent intent = getIntent();
         expense = (modelv2.Expense) intent.getSerializableExtra(EXPENSE);
 

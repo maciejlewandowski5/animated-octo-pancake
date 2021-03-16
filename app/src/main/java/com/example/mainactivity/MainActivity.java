@@ -1,7 +1,6 @@
 package com.example.mainactivity;
 
 
-import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.Point;
@@ -17,12 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Pair;
 import android.view.View;
 
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.mainactivity.helpers.AccountHelper;
+import com.example.mainactivity.helpers.ExpandableInfiniteScroller;
 import com.example.mainactivity.helpers.ImageViewResizeAnimation;
 import com.example.mainactivity.helpers.InfiniteScroller;
 import com.example.mainactivity.helpers.Utils;
@@ -39,7 +41,7 @@ import modelv2.Expense;
 import modelv2.Group;
 import modelv2.UserSession;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Exxpense.MainActivity";
     private static final String EXPENSE = "EXPENSE";
     private static final String EMPTY = "EMPTY";
@@ -51,9 +53,11 @@ public class MainActivity extends Activity {
     private int id = 0;
     private LottieAnimationView loadingIcon;
     private ConstraintLayout blacker;
+    private int numberOfExpensesToListen;
+    private int heightOfPaymentListElementIdDp;
 
     private static AccountHelper accountHelper;
-    private InfiniteScroller<modelv2.Expense> infiniteScroller;
+    private InfiniteScroller infiniteScroller;
     private UserSession userSession;
 
     public static void signOut() {
@@ -64,17 +68,26 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
         initializeViews();
-        MainActivity that = this;
-        infiniteScroller = new InfiniteScroller<>(container, 11 + 11 + 2 + 9 + 18 + 12 + 18, new InfiniteScroller.SpecificOnClickListener() {
+
+        heightOfPaymentListElementIdDp = 11 + 11 + 2 + 9 + 18 + 12 + 18;
+          MainActivity that = this;
+        infiniteScroller = new InfiniteScroller(container, heightOfPaymentListElementIdDp, new InfiniteScroller.SpecificOnClickListener() {
             @Override
             public void onClick(View view, Serializable object, int index) {
                 Intent intent = new Intent(that, ExpenseEditor.class);
                 ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that, new Pair<>(history, "cont"));
                 intent.putExtra(EXPENSE, object);
                 startActivity(intent, options.toBundle());
+            }
+        }, new InfiniteScroller.OnPenultimatePageWasScrolled() {
+            @Override
+            public void onScrolled(int scrolledPages, int totalNumberOfPages,int scrolledElements) {
+                System.out.println("YOU SHOLD CALL MORE DATA");
+                userSession.extendExpenseListeners();
             }
         }, ListElement::newInstance, this);
 
@@ -136,7 +149,11 @@ public class MainActivity extends Activity {
 
     private void initializeUserSession() {
         MainActivity that = this;
+        numberOfExpensesToListen = (((ScrollView) container.getParent()).getHeight()
+                / Utils.dpToPx(heightOfPaymentListElementIdDp,this)+1)*2;
+
         userSession = UserSession.getInstance();
+        userSession.setExpensesToRead(numberOfExpensesToListen);
         userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
             @Override
             public void onCurrentGroupNull() {
@@ -157,6 +174,12 @@ public class MainActivity extends Activity {
             @Override
             public void onExpensesUpdated(ArrayList<Expense> expenses) {
                 infiniteScroller.populate(expenses);
+            }
+        });
+        userSession.setOnExtraExpensesUpdated(new UserSession.OnExtraExpensesUpdated() {
+            @Override
+            public void onExtraExpensesUpdated(ArrayList<Expense> expenses) {
+                infiniteScroller.add(expenses);
             }
         });
     }
@@ -194,7 +217,7 @@ public class MainActivity extends Activity {
     }
 
     private void replaceTopBar(){
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         TopBar topBar = TopBar.newInstance(true);
         fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
@@ -226,6 +249,7 @@ public class MainActivity extends Activity {
         userSession.removeOnGroupUpdated();
         userSession.removeOnExpensesUpdated();
         userSession.removeOnCurrentGroupNull();
+        userSession.removeOnExtraExpensesUpdated();
     }
 
     public void logout(View view) {
@@ -234,5 +258,9 @@ public class MainActivity extends Activity {
 
     public void waitForConnection(View view) {
         Utils.toastMessage("Pleas, wait for connection",this);
+    }
+
+    public void startHistory(View view) {
+
     }
 }

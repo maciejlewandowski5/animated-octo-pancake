@@ -78,6 +78,11 @@ public class PaymentsList extends AppCompatActivity {
 
 
             }
+        }, new InfiniteScroller.OnPenultimatePageWasScrolled() {
+            @Override
+            public void onScrolled(int scrolledPages, int totalNumberOfPages, int scrolledElements) {
+
+            }
         }, PaymentListElement::newInstance, this);
 
 
