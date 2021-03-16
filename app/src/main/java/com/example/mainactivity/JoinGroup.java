@@ -1,8 +1,10 @@
 package com.example.mainactivity;
 
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -14,19 +16,22 @@ import modelv2.UserSession;
 public class JoinGroup extends AppCompatActivity {
 
     TextView textView;
+    boolean qrCodeScannerRunning;
+    private static final int REQUEST_CODE = 512;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join_group);
         textView = findViewById(R.id.edit_code);
+        qrCodeScannerRunning = false;
     }
 
     public void joinGroup(View view) {
         if (!textView.getText().toString().isEmpty()) {
             UserSession.getInstance().joinGroup(textView.getText().toString());
-        }else{
-            Utils.toastMessage(getString(R.string.provide_gorup_code),this);
+        } else {
+            Utils.toastMessage(getString(R.string.provide_gorup_code), this);
         }
     }
 
@@ -51,7 +56,28 @@ public class JoinGroup extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        UserSession.getInstance().removeOnJoinGroupError();
-        UserSession.getInstance().removeOnJoinGroupSuccess();
+        if (!qrCodeScannerRunning) {
+            UserSession.getInstance().removeOnJoinGroupError();
+            UserSession.getInstance().removeOnJoinGroupSuccess();
+        }
+    }
+
+    public void startQRCodeScanner(View view) {
+        Intent intent = new Intent(this, QRCodeScanner.class);
+        qrCodeScannerRunning = true;
+        startActivityForResult(intent, REQUEST_CODE);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                if (data.getData() != null) {
+                    textView.setText(data.getData().toString());
+                }
+            }
+        }
     }
 }

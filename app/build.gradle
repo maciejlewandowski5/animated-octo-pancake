@@ -45,4 +45,5 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     implementation 'com.github.kenglxn.QRGen:android:2.6.0'
     implementation "com.airbnb.android:lottie:3.6.1"
+    implementation 'me.dm7.barcodescanner:zxing:1.9.13'
 }

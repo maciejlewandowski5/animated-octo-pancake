@@ -153,7 +153,6 @@ public class UserSession {
                         Log.w(TAG, "Listen failed.", error);
                         return;
                     }
-                    ArrayList<Expense> expenses = new ArrayList<>();
                     if (value != null) {
                         currentGroup.clearExpenses();
                         for (DocumentSnapshot ds : value.getDocuments()) {
@@ -168,6 +167,7 @@ public class UserSession {
             expensesListenerSet = true;
         }
     }
+
 
 
     public void changeCurrentGroup(ShallowGroup shallowGroup) {
@@ -381,7 +381,7 @@ public class UserSession {
         this.onDebtUpdated = null;
     }
 
-    public void removeOnCurrentDataNull() {
+    public void removeOnCurrentGroupNull() {
         this.onCurrentGroupNull = null;
     }
 

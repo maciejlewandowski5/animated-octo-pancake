@@ -1,6 +1,7 @@
 package com.example.mainactivity;
 
 
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.Point;
@@ -20,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.mainactivity.helpers.AccountHelper;
 import com.example.mainactivity.helpers.ImageViewResizeAnimation;
 import com.example.mainactivity.helpers.InfiniteScroller;
@@ -34,9 +36,10 @@ import java.util.Map;
 
 import modelv2.Expense;
 
+import modelv2.Group;
 import modelv2.UserSession;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String TAG = "Exxpense.MainActivity";
     private static final String EXPENSE = "EXPENSE";
     private static final String EMPTY = "EMPTY";
@@ -46,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ratioBar;
     private LinearLayout container;
     private int id = 0;
+    private LottieAnimationView loadingIcon;
+    private ConstraintLayout blacker;
 
     private static AccountHelper accountHelper;
     private InfiniteScroller<modelv2.Expense> infiniteScroller;
@@ -75,63 +80,6 @@ public class MainActivity extends AppCompatActivity {
 
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
-        accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
-            @Override
-            public void signInSuccessful(FirebaseUser user) {
-                userSession = UserSession.getInstance();
-                userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
-                    @Override
-                    public void onCurrentGroupNull() {
-                        Intent intent = new Intent(that, CreateGroup.class);
-                        startActivity(intent);
-                    }
-                });
-                userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
-                    @Override
-                    public void onGroupUpdated(modelv2.Group group) {
-                        Point size = new Point();
-                        getWindowManager().getDefaultDisplay().getRealSize(size);
-                        float total = 0;
-                        try {
-                            total = group.getTotal(UserSession.getInstance().getCurrentUser());
-                        } catch (IllegalArgumentException e) {
-                            total = 0f;
-                        }
-                        float absoluteTotal = group.getAbsoluteTotal();
-
-                        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
-                        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
-                                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
-                                finalWidth, ratioBar.getLayoutParams().height);
-                        ratioBar.setAnimation(anim);
-                        ratioBar.getLayoutParams().width = finalWidth;
-                        if (total/absoluteTotal*100>66) {
-                            ratioBar.setImageResource(R.drawable.background_accent_variant);
-                        } else if (total/absoluteTotal*100<33) {
-                            ratioBar.setImageResource(R.drawable.background_accent);
-                        } else {
-                            ratioBar.setImageResource(R.drawable.background_teal);
-                        }
-                        totalAmount.setText(Utils.formatPriceLocale(total));
-
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        TopBar topBar = TopBar.newInstance(true);
-                         fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-                        fragmentTransaction.replace(id, topBar);
-                        fragmentTransaction.commit();
-                        id = topBar.getId();
-                    }
-                });
-                userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
-                    @Override
-                    public void onExpensesUpdated(ArrayList<Expense> expenses) {
-                        infiniteScroller.populate(expenses);
-                    }
-                });
-            }
-        });
-        accountHelper.signInUsingGoogle();
 
     }
 
@@ -160,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
         totalAmount = findViewById(R.id.textView4);
         ratioBar = findViewById(R.id.imageView);
         id = R.id.fragment;
+        loadingIcon = findViewById(R.id.number_loading);
+        blacker = findViewById(R.id.blacker);
     }
 
     public void startPaymentsList(View view) {
@@ -184,19 +134,105 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent, options.toBundle());
     }
 
+    private void initializeUserSession() {
+        MainActivity that = this;
+        userSession = UserSession.getInstance();
+        userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
+            @Override
+            public void onCurrentGroupNull() {
+                Intent intent = new Intent(that, CreateGroup.class);
+                startActivity(intent);
+            }
+        });
+        userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
+            @Override
+            public void onGroupUpdated(modelv2.Group group) {
+                float total = calculateTotal(group);
+                setRatioBar(group,total);
+                totalAmount.setText(Utils.formatPriceLocale(total));
+                replaceTopBar();
+            }
+        });
+        userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
+            @Override
+            public void onExpensesUpdated(ArrayList<Expense> expenses) {
+                infiniteScroller.populate(expenses);
+            }
+        });
+    }
+
+    private float calculateTotal(Group group){
+        float total = 0;
+        try {
+            total = group.getTotal(UserSession.getInstance().getCurrentUser());
+        } catch (IllegalArgumentException e) {
+            total = 0f;
+        }
+        return total;
+    }
+
+
+    private void setRatioBar(Group group, float total){
+        Point size = new Point();
+        getWindowManager().getDefaultDisplay().getRealSize(size);
+        float absoluteTotal = group.getAbsoluteTotal();
+        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
+        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
+                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
+                finalWidth, ratioBar.getLayoutParams().height);
+        ratioBar.setAnimation(anim);
+        ratioBar.getLayoutParams().width = finalWidth;
+        if (total / absoluteTotal * 100 > 66) {
+            ratioBar.setImageResource(R.drawable.background_accent_variant);
+        } else if (total / absoluteTotal * 100 < 33) {
+            ratioBar.setImageResource(R.drawable.background_accent);
+        } else {
+            ratioBar.setImageResource(R.drawable.background_teal);
+        }
+        loadingIcon.setVisibility(View.INVISIBLE);
+        blacker.setVisibility(View.INVISIBLE);
+    }
+
+    private void replaceTopBar(){
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        TopBar topBar = TopBar.newInstance(true);
+        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        fragmentTransaction.replace(id, topBar);
+        fragmentTransaction.commit();
+        id = topBar.getId();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        if (accountHelper.isLoggedIn()) {
+            initializeUserSession();
+            infiniteScroller.populate(userSession.getCurrentGroup().getExpenses());
+        } else {
+            accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
+                @Override
+                public void signInSuccessful(FirebaseUser user) {
+                    initializeUserSession();
+                }
+            });
+            accountHelper.signInUsingGoogle();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //userSession.removeOnGroupUpdated();
-        //userSession.removeOnExpensesUpdated();
+        userSession.removeOnGroupUpdated();
+        userSession.removeOnExpensesUpdated();
+        userSession.removeOnCurrentGroupNull();
     }
 
     public void logout(View view) {
         accountHelper.signOut(TAG);
+    }
+
+    public void waitForConnection(View view) {
+        Utils.toastMessage("Pleas, wait for connection",this);
     }
 }

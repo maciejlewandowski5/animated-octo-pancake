@@ -5,6 +5,7 @@
         <item name="colorPrimary">@color/grey</item>
         <item name="colorPrimaryDark">@color/dark_grey</item>
         <item name="colorAccent">@color/teal</item>
+        <item name="android:windowFullscreen">true</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>

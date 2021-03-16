@@ -25,6 +25,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Objects;
+
 import modelv2.User;
 import modelv2.UserSession;
 
@@ -34,12 +36,14 @@ public class AccountHelper {
     private Activity activity;
     private static final int RC_SIGN_IN = 1001;
     private SignInSuccessful signInSuccessful;
+    private boolean loggedIn;
 
     public AccountHelper(Activity activity) {
         this.firebaseAuth = FirebaseAuth.getInstance();
         this.googleSignInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_SIGN_IN);
         this.activity = activity;
         this.signInSuccessful = null;
+        this.loggedIn = false;
     }
 
     public void setSignInSuccessful(SignInSuccessful signInSuccessful) {
@@ -57,6 +61,7 @@ public class AccountHelper {
                 Utils.toastMessage("You Signed out", activity);
                 activity.finish();
                 //   activity.startActivity(intent);
+                loggedIn = false;
             }
         });
     }
@@ -84,7 +89,8 @@ public class AccountHelper {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            Utils.toastMessage(activity.getString(R.string.you_logged_in) + task.getResult().getDisplayName(), activity);
+            Utils.toastMessage(activity.getString(R.string.you_logged_in) + Objects.requireNonNull(task.getResult()).getEmail(), activity);
+            loggedIn = true;
             assert account != null;
             firebaseAuthWithGoogle(account, tag);
         } catch (ApiException e) {
@@ -127,6 +133,11 @@ public class AccountHelper {
         });
 
 
+    }
+
+
+    public boolean isLoggedIn() {
+        return loggedIn;
     }
 
     public interface SignInSuccessful {

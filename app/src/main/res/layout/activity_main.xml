@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:minHeight="110dp"/>
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
@@ -25,6 +26,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fragment">
+
+
 
         <TextView
             android:id="@+id/textView3"
@@ -47,6 +50,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+
 
         <Button
             android:id="@+id/imageButton2"
@@ -72,6 +77,8 @@
             app:layout_constraintTop_toBottomOf="@+id/imageButton2"
             android:background="@color/on_primary">
 
+
+
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="250dp"
@@ -80,6 +87,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/background_teal" />
+
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -128,13 +138,6 @@
                 android:layout_marginStart="33dp"
                 android:layout_marginEnd="33dp">
 
-                <com.airbnb.lottie.LottieAnimationView
-                    android:id="@+id/animation_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                app:lottie_fileName="if30_editor_x4rrdiwp.json"
-                app:lottie_loop="true"
-               app:lottie_autoPlay="true" />
 
 
 
@@ -167,6 +170,31 @@
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/circle_red"
             android:visibility="invisible"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/blacker"
+        android:onClick="waitForConnection"
+        android:background="@color/black60Transaprent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/number_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/loading" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
