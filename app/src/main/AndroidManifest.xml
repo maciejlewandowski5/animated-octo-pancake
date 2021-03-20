@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.mainactivity">
+    package="com.maaps.expense">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -11,15 +11,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MainActivity">
-        <activity android:name=".QRCodeScanner"></activity>
-        <activity android:name=".Share" />
-        <activity android:name=".CreateGroup" />
-        <activity android:name=".JoinGroup" />
-        <activity android:name=".PaymentsList" />
-        <activity android:name=".ExpenseEditor" />
+        <activity android:name="com.maaps.expense.QRCodeScanner"
+            android:screenOrientation="portrait" ></activity>
+        <activity android:name="com.maaps.expense.Share"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.maaps.expense.CreateGroup"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.maaps.expense.JoinGroup"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.maaps.expense.PaymentsList"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.maaps.expense.ExpenseEditor"
+            android:screenOrientation="portrait"/>
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name="com.maaps.expense.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

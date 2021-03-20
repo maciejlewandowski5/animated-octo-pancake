@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.example.mainactivity.helpers.ExpandableInfiniteScroller;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -34,6 +33,7 @@ public class UserSession {
     private ListenerRegistration groupListener;
     private boolean expensesListenerSet;
     private ListenerRegistration expenseListener;
+    private ArrayList<ListenerRegistration> extendedExpenseListeners;
     private Group currentGroup;
     private DebtManager debtManager;
     private DocumentSnapshot lasExpenseDocumentSpanshot;
@@ -65,6 +65,7 @@ public class UserSession {
         debtManager = null;
         db = FirebaseFirestore.getInstance();
         expensesToRead = 8;
+        extendedExpenseListeners = new ArrayList<>();
 
         db = FirebaseFirestore.getInstance();
         db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -188,7 +189,7 @@ public class UserSession {
         if (expensesListenerSet) {
             if (lasExpenseDocumentSpanshot != null) {
                 db = FirebaseFirestore.getInstance();
-                expenseListener = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").orderBy("dateTime", Query.Direction.DESCENDING).limit(expensesToRead).startAfter(lasExpenseDocumentSpanshot).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                ListenerRegistration expenseListenerTmp = db.collection("Groups").document(currentShallowGroup.getGroupId()).collection("Expenses").orderBy("dateTime", Query.Direction.DESCENDING).limit(expensesToRead).startAfter(lasExpenseDocumentSpanshot).addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (error != null) {
@@ -209,8 +210,14 @@ public class UserSession {
                         }
                     }
                 });
+                extendedExpenseListeners.add(expenseListenerTmp);
             }
         }
+    }
+
+    public void clearSession(){
+        removeGroupListener();
+        removeExpenseListeners();
     }
 
 
@@ -218,7 +225,7 @@ public class UserSession {
         lasExpenseDocumentSpanshot = null;
         if (groups.contains(shallowGroup)) {
             this.removeGroupListener();
-            this.removeExpenseListener();
+            this.removeExpenseListeners();
             ShallowGroup tmp = currentShallowGroup;
             currentShallowGroup = groups.get(groups.indexOf(shallowGroup));
             groups.remove(currentShallowGroup);
@@ -356,6 +363,13 @@ public class UserSession {
         });
     }
 
+
+    public void endSession(){
+        removeGroupListener();
+        removeExpenseListeners();
+        currentSession = null;
+    }
+
     private void removeGroupListener() {
         if (groupListenerSet) {
             groupListener.remove();
@@ -363,9 +377,10 @@ public class UserSession {
         }
     }
 
-    private void removeExpenseListener() {
+    private void removeExpenseListeners() {
         if (expensesListenerSet) {
             expenseListener.remove();
+            extendedExpenseListeners.forEach(ListenerRegistration::remove);
             this.expensesListenerSet = false;
         }
     }

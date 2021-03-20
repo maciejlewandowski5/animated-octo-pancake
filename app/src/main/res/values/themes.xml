@@ -7,6 +7,7 @@
         <item name="colorAccent">@color/teal</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+
         <!-- Customize your theme here. -->
     </style>
 
