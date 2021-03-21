@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     android:background="@drawable/background_dark"
     tools:context=".CreateGroup">
+
+    <fragment
+        android:id="@+id/fragment3"
+        android:name="com.maaps.expense.TitleBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView9"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.77" />
+
     <TextView
         android:id="@+id/textView9"
         style="@style/title"

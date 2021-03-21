@@ -13,24 +13,34 @@
 
         <TextView
             android:id="@+id/titleList"
-            android:layout_width="wrap_content"
+            style="@style/list_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:layout_marginTop="15dp"
             android:text=""
+            android:lines="1"
+            android:scrollHorizontally="true"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@+id/date"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            style="@style/list_title"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/user"
-            android:layout_width="wrap_content"
+            style="@style/small_text"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:lines="1"
+            android:scrollHorizontally="true"
             android:text=""
+            app:layout_constraintEnd_toStartOf="@+id/amount"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/titleList"
-            app:layout_constraintTop_toBottomOf="@+id/titleList"
-            style="@style/small_text"/>
+            app:layout_constraintTop_toBottomOf="@+id/titleList" />
 
         <TextView
             android:id="@+id/date"

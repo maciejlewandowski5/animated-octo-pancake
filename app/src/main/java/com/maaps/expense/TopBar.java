@@ -70,56 +70,59 @@ public class TopBar extends Fragment {
             title.setText(userSession.getCurrentShallowGroup().getGroupName());
             code.setText(userSession.getCurrentShallowGroup().getGroupId());
             if (menuVisible) {
-                PopupMenu popupMenu = new PopupMenu(getActivity(), menuIcon);
-                popupMenu.getMenu().add(R.string.join_new_group);
-                popupMenu.getMenu().add(R.string.create_new_group);
-                popupMenu.getMenu().add(getString(R.string.share_group));
-                for (ShallowGroup group : userSession.getGroups()) {
-                    if (!group.getGroupId().equals(userSession.getCurrentShallowGroup().getGroupId())) {
-                        popupMenu.getMenu().add(group.getGroupName());
-                    }
-                }
-                popupMenu.getMenu().add(R.string.logout);
 
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        CharSequence itemTitle = item.getTitle();
-                        if (itemTitle.equals(getString(R.string.join_new_group))) {
-                            Intent intent = new Intent(getActivity(), JoinGroup.class);
-                            requireActivity().startActivity(intent);
-                        } else if (itemTitle.equals(getString(R.string.create_new_group))) {
-                            Intent intent = new Intent(getActivity(), CreateGroup.class);
-                            requireActivity().startActivity(intent);
-                        }else if (itemTitle.equals(getString(R.string.share_group))){
-                               // Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                               // shareIntent.setType("text/plain");
-                               // shareIntent.putExtra(Intent.EXTRA_TEXT,userSession.getCurrentGroup().getId());
-                              //  requireActivity().startActivity(Intent.createChooser(shareIntent, "Share..."));
-                                Intent intent = new Intent(requireActivity(),Share.class);
-                                requireActivity().startActivity(intent);
-                        }
-                        else if(itemTitle.equals(getString(R.string.logout))){
-                            MainActivity.signOut();
-                        } else {
-                            ShallowGroup tmp = null;
-                            for (ShallowGroup group : userSession.getGroups()) {
-                                if (itemTitle.equals(group.getGroupName())) {
-                                    tmp = group;
-                                    break;
-
-                                }
-                            }
-                            if (tmp != null) {
-                                userSession.changeCurrentGroup(tmp);
-                            }
-                        }
-                        return false;
-                    }
-                });
                 menuIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        PopupMenu popupMenu = new PopupMenu(getActivity(), menuIcon);
+                        popupMenu.getMenu().add(R.string.join_new_group);
+                        popupMenu.getMenu().add(R.string.create_new_group);
+                        popupMenu.getMenu().add(getString(R.string.share_group));
+                        for (ShallowGroup group : userSession.getGroups()) {
+                            if (!group.getGroupId().equals(userSession.getCurrentShallowGroup().getGroupId())) {
+                                popupMenu.getMenu().add(group.getGroupName());
+                            }
+                        }
+                        popupMenu.getMenu().add(R.string.logout);
+
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                CharSequence itemTitle = item.getTitle();
+                                if (itemTitle.equals(getString(R.string.join_new_group))) {
+                                    Intent intent = new Intent(getActivity(), JoinGroup.class);
+                                    requireActivity().startActivity(intent);
+                                } else if (itemTitle.equals(getString(R.string.create_new_group))) {
+                                    Intent intent = new Intent(getActivity(), CreateGroup.class);
+                                    requireActivity().startActivity(intent);
+                                }else if (itemTitle.equals(getString(R.string.share_group))){
+                                    // Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                                    // shareIntent.setType("text/plain");
+                                    // shareIntent.putExtra(Intent.EXTRA_TEXT,userSession.getCurrentGroup().getId());
+                                    //  requireActivity().startActivity(Intent.createChooser(shareIntent, "Share..."));
+                                    Intent intent = new Intent(requireActivity(),Share.class);
+                                    requireActivity().startActivity(intent);
+                                }
+                                else if(itemTitle.equals(getString(R.string.logout))){
+                                    MainActivity.signOut();
+                                } else {
+                                    ShallowGroup tmp = null;
+                                    for (ShallowGroup group : userSession.getGroups()) {
+                                        if (itemTitle.equals(group.getGroupName())) {
+                                            tmp = group;
+                                            break;
+
+                                        }
+                                    }
+                                    if (tmp != null) {
+                                        userSession.changeCurrentGroup(tmp);
+                                    }
+                                }
+                                return false;
+                            }
+                        });
+
+
                         popupMenu.show();
                     }
                 });

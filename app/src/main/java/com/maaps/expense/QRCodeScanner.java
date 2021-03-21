@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -20,14 +21,27 @@ public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHa
     private String TAG = "QRCodeScanner";
     private static final int MY_CAMERA_REQUEST_CODE = 100;
 
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
         mScannerView = new ZXingScannerView(this);
         setContentView(mScannerView);
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==MY_CAMERA_REQUEST_CODE){
+            if (grantResults[0]==PackageManager.PERMISSION_DENIED){
+                Utils.toastMessageLong(getString(R.string.camera_permission_rationale),this);
+                onBackPressed();
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class Group implements Serializable {
     private String id;
@@ -40,9 +41,13 @@ public class Group implements Serializable {
                 ((Map<String, Object>) value.getData().get(payer.getId())).entrySet().forEach((borrower) -> {
                     User tmp = new User(borrower.getKey(), borrower.getKey());
                     try {
-                        payer.addBorrower(users.get(users.indexOf(tmp)), (Double) borrower.getValue());
-                    } catch (ClassCastException e) {
-                        payer.addBorrower(users.get(users.indexOf(tmp)), ((Long) borrower.getValue()).doubleValue());
+                        try {
+                            payer.addBorrower(users.get(users.indexOf(tmp)), (Double) borrower.getValue());
+                        } catch (ClassCastException e) {
+                            payer.addBorrower(users.get(users.indexOf(tmp)), ((Long) borrower.getValue()).doubleValue());
+                        }
+                    } catch (ArrayIndexOutOfBoundsException payerLeftGroup){
+
                     }
                 });
             });
@@ -64,7 +69,7 @@ public class Group implements Serializable {
         payers.add(new Payer(currentUser));
     }
 
-    public void addExpenseQuietly(Expense expense){
+    public void addExpenseQuietly(Expense expense) {
         expenses.add(expense);
     }
 
@@ -76,7 +81,7 @@ public class Group implements Serializable {
                 int index = payers.indexOf(tmp.getPayer());
                 if (index > -1) {
                     for (User borrower : tmp.getBorrowers()) {
-                        payers.get(index).removeBorrower(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
+                        payers.get(index).removeBorrowedAmount(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
                     }
                 } else {
                     throw new IllegalArgumentException("No such payer in group");
@@ -84,15 +89,15 @@ public class Group implements Serializable {
                 expenses.remove(tmp);
             }
         }
-            expenses.add(expense);
-            int index = payers.indexOf(expense.getPayer());
-            if (index > -1) {
-                for (User borrower : expense.getBorrowers()) {
-                    payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
-                }
-            } else {
-                throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
+        expenses.add(expense);
+        int index = payers.indexOf(expense.getPayer());
+        if (index > -1) {
+            for (User borrower : expense.getBorrowers()) {
+                payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
             }
+        } else {
+            throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
+        }
 
     }
 
@@ -169,7 +174,14 @@ public class Group implements Serializable {
 
     public void addUser(User user) {
         users.add(user);
-        payers.add(new Payer(user));
+        Payer payer = new Payer(user);
+        users.forEach(borrower ->{
+            payer.addBorrower(borrower,0d);
+        });
+        payers.forEach(payer1 ->{
+            payer1.addBorrower(user,0d);
+        });
+        payers.add(payer);
     }
 
     public ShallowGroup shallowValue() throws InstantiationException {
@@ -178,4 +190,19 @@ public class Group implements Serializable {
         } else throw new InstantiationException("Id in Group is null");
     }
 
+    public void removeUser(User currentUser) {
+        users.remove(currentUser);
+        payers.forEach(payer -> {
+            payer.removeBorrower(currentUser);
+        });
+        payers.removeIf(new Predicate<Payer>() {
+            @Override
+            public boolean test(Payer payer) {
+                if(payer.getId().equals(currentUser.getId())){
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
 }

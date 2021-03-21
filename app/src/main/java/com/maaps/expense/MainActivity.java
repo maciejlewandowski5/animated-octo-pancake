@@ -2,33 +2,49 @@ package com.maaps.expense;
 
 
 import android.app.ActivityOptions;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.maaps.expense.helpers.AccountHelper;
 import com.maaps.expense.helpers.ImageViewResizeAnimation;
 import com.maaps.expense.helpers.InfiniteScroller;
 import com.maaps.expense.helpers.Utils;
 
 import com.google.firebase.auth.FirebaseUser;
+
+import org.w3c.dom.Text;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +53,7 @@ import java.util.Map;
 import modelv2.Expense;
 
 import modelv2.Group;
+import modelv2.User;
 import modelv2.UserSession;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
     private ConstraintLayout blacker;
     private int numberOfExpensesToListen;
     private int heightOfPaymentListElementIdDp;
+    private ConstraintLayout tab1;
+    private ConstraintLayout tab2;
+    private HorizontalScrollView horizontalScrollView;
+    private ImageView logo;
+    private ImageView[] pageIndicators;
 
     private static AccountHelper accountHelper;
     private InfiniteScroller infiniteScroller;
@@ -92,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
 
+
+
     }
 
     public static void refreshCurrentGroup(Map.Entry<String, Object> group) {
@@ -121,6 +145,65 @@ public class MainActivity extends AppCompatActivity {
         id = R.id.fragment;
         loadingIcon = findViewById(R.id.number_loading);
         blacker = findViewById(R.id.blacker);
+        tab1 = findViewById(R.id.constraintLayout);
+        tab2 = findViewById(R.id.tab2);
+        horizontalScrollView = findViewById(R.id.scrollViewHorizontal);
+        logo = findViewById(R.id.logo);
+        pageIndicators = new ImageView[2];
+        pageIndicators[0] = findViewById(R.id.imageView5);
+        pageIndicators[1] = findViewById(R.id.imageView6);
+
+        initializeScrollTabs();
+        showSplashScreen();
+
+    }
+
+    public void initializeScrollTabs() {
+
+        Point point = new Point();
+        this.getWindowManager().getDefaultDisplay().getSize(point);
+        int width = point.x;
+        ViewGroup.LayoutParams layoutParams = tab1.getLayoutParams();
+        layoutParams.width = width;
+        tab1.setLayoutParams(layoutParams);
+        layoutParams = tab2.getLayoutParams();
+        layoutParams.width = width / 3;
+        tab2.setLayoutParams(layoutParams);
+
+        final boolean[] scrolling = {false};
+        final boolean[] tab2IsActive = {false};// => final boolean[] tab1IsActive = {true};
+        horizontalScrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                System.out.println(scrolling[0]);
+                if (!tab2IsActive[0]) {
+                    if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 >= 22) {
+                        tab2IsActive[0] = true;
+                        pageIndicators[0].setImageResource(R.drawable.circle_dark_grey);
+                        pageIndicators[1].setImageResource(R.drawable.circle_grey);
+                    }
+                    System.out.println(horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100);
+                    if (!scrolling[0]) {
+                        if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 >= 7) {
+                            horizontalScrollView.smoothScrollTo(width, 0);
+                        }
+                    }
+                } else {
+                    if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 <= 2) {
+                        tab2IsActive[0] = false;
+                        pageIndicators[0].setImageResource(R.drawable.circle_grey);
+                        pageIndicators[1].setImageResource(R.drawable.circle_dark_grey);
+                    }
+                    if (!scrolling[0]) {
+                        if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 <= 18) {
+                            horizontalScrollView.smoothScrollTo(0, 0);
+                        }
+                    }
+                }
+            }
+
+
+        });
     }
 
     public void startPaymentsList(View view) {
@@ -210,10 +293,30 @@ public class MainActivity extends AppCompatActivity {
         } else {
             ratioBar.setImageResource(R.drawable.background_teal);
         }
-        loadingIcon.setVisibility(View.INVISIBLE);
-        blacker.setVisibility(View.INVISIBLE);
+        hideSplashScreen();
     }
 
+    private  void showSplashScreen(){
+        loadingIcon.setVisibility(View.VISIBLE);
+        blacker.setVisibility(View.VISIBLE);
+        logo.setVisibility(View.VISIBLE);
+        ((TextView)findViewById(R.id.textView3)).setText("");
+        ((TextView)findViewById(R.id.history)).setText("");
+        ((Button)findViewById(R.id.imageButton2)).setText("");
+        ((Button)findViewById(R.id.imageButton2)).setVisibility(View.INVISIBLE);
+        ((View)findViewById(R.id.floatingActionButton)).setVisibility(View.INVISIBLE);
+    }
+
+    private  void hideSplashScreen(){
+        loadingIcon.setVisibility(View.INVISIBLE);
+        blacker.setVisibility(View.INVISIBLE);
+        logo.setVisibility(View.INVISIBLE);
+        ((TextView)findViewById(R.id.textView3)).setText(getString(R.string.your_balance));
+        ((TextView)findViewById(R.id.history)).setText(getString(R.string.history));
+        ((Button)findViewById(R.id.imageButton2)).setText(getString(R.string.payments));
+        ((Button)findViewById(R.id.imageButton2)).setVisibility(View.VISIBLE);
+        ((View)findViewById(R.id.floatingActionButton)).setVisibility(View.VISIBLE);
+    }
     private void replaceTopBar() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -237,6 +340,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void signInSuccessful(FirebaseUser user) {
                     initializeUserSession();
+
+
+
                 }
             });
             accountHelper.signInUsingGoogle();
@@ -264,5 +370,72 @@ public class MainActivity extends AppCompatActivity {
 
     public void startHistory(View view) {
 
+    }
+
+    private boolean checkIfUserIsPayerOrBorrower(String id) {
+        for (Expense expense : userSession.getDebtExpenses()) {
+            if (expense.getPayer().getId().equals(id)) {
+                return true;
+            } else {
+                for (User borrower : expense.getBorrowers()) {
+                    if (borrower.getId().equals(id)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void scrollToTab1() {
+        horizontalScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                horizontalScrollView.smoothScrollTo(0, 0);
+            }
+        });
+    }
+
+    public void leaveGroup(View view) {
+        if (checkIfUserIsPayerOrBorrower(userSession.getCurrentUser().getId())) {
+            Utils.toastMessage("Please get or pay your expenses before leaving group.", this);
+            scrollToTab1();
+            startPaymentsList(view);
+        } else {
+            String buttonText = "Leave group";
+            if (userSession.amILastUser()) { // TODO:: Method to implement
+                buttonText = "Leave and delete group";
+            }
+
+            MainActivity that = this;
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialog.setTitle("Read this!");
+            alertDialog.setMessage("You are about to leave " + userSession.getCurrentShallowGroup().getGroupName() + "."
+                    + "You wont be able to see content of this group. If you are the last user in this group, it will be" +
+                    " deleted with all expenses. There is no going back to retrieve data.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, buttonText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (!userSession.amILastUser()) {
+                        try {
+                            userSession.leaveCurrentGroup();
+                        } catch (IllegalStateException e) {
+                            Utils.toastMessage(e.getMessage(), that);
+                        }
+
+                    } else {
+                        userSession.leaveAndDeleteCurrentGroup();
+                    }
+                }
+            });
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            alertDialog.show();
+            scrollToTab1();
+        }
     }
 }

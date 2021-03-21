@@ -39,7 +39,7 @@ public class Payer extends User implements Serializable {
         return borrowers;
     }
 
-    public void removeBorrower(User user, double amount) {
+    public void removeBorrowedAmount(User user, double amount) {
         if (borrowers.contains(user.getId())) {
             int index = borrowers.indexOf(user.getId());
             double prv = amounts.get(index);
@@ -72,5 +72,9 @@ public class Payer extends User implements Serializable {
     @Override
     public boolean equals(@Nullable Object obj) {
         return super.equals(obj);
+    }
+
+    public void removeBorrower(User currentUser) {
+        borrowers.remove(currentUser);
     }
 }

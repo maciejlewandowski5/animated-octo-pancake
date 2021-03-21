@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import net.glxn.qrgen.android.QRCode;
 import net.glxn.qrgen.core.image.ImageType;
@@ -20,6 +21,9 @@ public class Share extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_share);
+        TextView title = findViewById(R.id.textView14);
+        String newTitle = UserSession.getInstance().getCurrentShallowGroup().getGroupName();
+        title.setText(newTitle);
 // override the image type to be JPG
         ImageView imageView = findViewById(R.id.imageView4);
         id = UserSession.getInstance().getCurrentGroup().getId();

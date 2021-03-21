@@ -1,5 +1,6 @@
 package modelv2;
 
+import android.os.Parcel;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -15,6 +16,9 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Source;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.messaging.RemoteMessageCreator;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,6 +71,7 @@ public class UserSession {
         expensesToRead = 8;
         extendedExpenseListeners = new ArrayList<>();
 
+
         db = FirebaseFirestore.getInstance();
         db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .get(Source.SERVER).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -107,6 +112,35 @@ public class UserSession {
         result.put("groups", nested);
         result.put("currentGroup", nested);
         return result;
+    }
+
+    public void leaveCurrentGroup() throws IllegalStateException {
+        ShallowGroup toLeave = currentShallowGroup;
+        if (groups.size() > 0) {
+            Group toLeaveHydrated = currentGroup;
+            changeCurrentGroup(groups.get(0));
+            toLeaveHydrated.removeUser(currentUser);
+            UserSession that = this;
+            db.collection("Groups").document(toLeave.getGroupId()).set(toLeaveHydrated.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    groups.remove(toLeave);
+                    db.collection("Users").document(currentUser.getId()).update(that.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            setGroupListener();
+                            FirebaseMessaging.getInstance().unsubscribeFromTopic(toLeave.groupId);
+                            if (onGroupPushed != null) {
+                                onGroupPushed.onGroupPushed();
+                            }
+                        }
+                    });
+                }
+            });
+
+        } else {
+            throw new IllegalStateException("You need to have at leas one group");
+        }
     }
 
     public void setExpensesToRead(int expensesToRead) {
@@ -215,7 +249,7 @@ public class UserSession {
         }
     }
 
-    public void clearSession(){
+    public void clearSession() {
         removeGroupListener();
         removeExpenseListeners();
     }
@@ -251,6 +285,7 @@ public class UserSession {
             public void onSuccess(DocumentReference documentReference) {
                 ShallowGroup shallowGroup = new ShallowGroup(documentReference.getId(), name);
                 groups.add(shallowGroup);
+                FirebaseMessaging.getInstance().subscribeToTopic(documentReference.getId());
                 changeCurrentGroup(shallowGroup);
             }
         });
@@ -268,6 +303,7 @@ public class UserSession {
                         Group group = new Group(documentSnapshot);
                         group.addUser(currentUser);
                         documentSnapshot.getReference().update(group.toMap());
+                        FirebaseMessaging.getInstance().subscribeToTopic(documentSnapshot.getId());
                         if (onJoinGroupSuccess != null) {
                             onJoinGroupSuccess.onJoinGroupSuccess();
                         }
@@ -364,7 +400,7 @@ public class UserSession {
     }
 
 
-    public void endSession(){
+    public void endSession() {
         removeGroupListener();
         removeExpenseListeners();
         currentSession = null;
@@ -424,6 +460,7 @@ public class UserSession {
     public void removeOnExpensesUpdated() {
         this.onExpensesUpdated = null;
     }
+
     public void removeOnExtraExpensesUpdated() {
         this.onExtraExpensesUpdated = null;
     }
@@ -463,6 +500,7 @@ public class UserSession {
     public void setOnExpensesUpdated(OnExpensesUpdated onExpensesUpdated) {
         this.onExpensesUpdated = onExpensesUpdated;
     }
+
     public void setOnExtraExpensesUpdated(OnExtraExpensesUpdated onExtraExpensesUpdated) {
         this.onExtraExpensesUpdated = onExtraExpensesUpdated;
     }
@@ -477,6 +515,19 @@ public class UserSession {
         });
         result.put("groups", nested);
         return result;
+    }
+
+    public boolean amILastUser() {
+        if (currentGroup.getUsers().size() == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void leaveAndDeleteCurrentGroup() {
+        leaveCurrentGroup();
+        //TODO:: Delete group if no user in it
     }
 
     public interface OnExpensePushed {
@@ -495,6 +546,7 @@ public class UserSession {
     public interface OnExpensesUpdated {
         public void onExpensesUpdated(ArrayList<Expense> expenses);
     }
+
     public interface OnExtraExpensesUpdated {
         public void onExtraExpensesUpdated(ArrayList<Expense> expenses);
     }

@@ -262,10 +262,14 @@ public class ExpenseEditor extends AppCompatActivity {
             } else {
                 modelv2.Expense expense1 = new modelv2.Expense(name, ((Float) price).doubleValue(), calendar.getTime(), payer, borrowers);
                 expense1.setId(expense.getId());
-                userSession.editExpense(expense1);
+                try {
+                    userSession.editExpense(expense1);
+                } catch (IllegalArgumentException e) {
+                    Utils.toastMessageLong("This expense use, user who left group. You can not edit this expense. Please consider adding new expense.", this);
+                }
             }
             onBackPressed();
-        }else{
+        } else {
             Utils.toastMessage(getString(R.string.please_fill), this);
         }
     }

@@ -45,6 +45,10 @@ public class Utils {
     }
 
 
+    public static void toastMessageLong(String message, Context context) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    }
+
     public static String formatPriceLocale(float price) {
         return String.format(Locale.getDefault(), "%.2f", price);
     }

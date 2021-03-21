@@ -3,8 +3,12 @@ package com.maaps.expense;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -19,7 +23,7 @@ public class JoinGroup extends AppCompatActivity {
     TextView textView;
     boolean qrCodeScannerRunning;
     private static final int REQUEST_CODE = 512;
-
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +69,8 @@ public class JoinGroup extends AppCompatActivity {
     }
 
     public void startQRCodeScanner(View view) {
+
+
         Intent intent = new Intent(this, QRCodeScanner.class);
         qrCodeScannerRunning = true;
         startActivityForResult(intent, REQUEST_CODE);

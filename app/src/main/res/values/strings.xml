@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">MainActivity</string>
+    <string name="app_name">Expense</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="set_name_for_group">Set name</string>
     <string name="example_code">XXXXXX</string>
-    <string name="join_new_group">Join new group</string>
+    <string name="join_new_group">Join group</string>
     <string name="create_new_group">Create new group</string>
     <string name="your_balance">Your balance</string>
     <string name="_0">0</string>
@@ -43,5 +43,9 @@
     <string name="or_share_code">or share code</string>
     <string name="see_all">see all</string>
     <string name="see_all_underscore">&lt;u&gt;see all&lt;/u&gt;</string>
+    <string name="camera_permission_rationale">In order to scan QR code we need you camera. If you do not want give us permission pleas consider joining group by code.</string>
+    <string name="delete_group">Delete group</string>
+    <string name="leave_group">Leave group</string>
+    <string name="default_notification_channel_id">groups</string>
 
 </resources>
