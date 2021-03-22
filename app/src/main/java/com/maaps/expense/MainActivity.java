@@ -1,89 +1,49 @@
 package com.maaps.expense;
 
-
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
-
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
-
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.airbnb.lottie.LottieAnimationView;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.maaps.expense.helpers.AccountHelper;
 import com.maaps.expense.helpers.ImageViewResizeAnimation;
 import com.maaps.expense.helpers.InfiniteScroller;
+import com.maaps.expense.helpers.MainActivity.HorizontalTabsScroller;
 import com.maaps.expense.helpers.Utils;
-
-import com.google.firebase.auth.FirebaseUser;
-
-import org.w3c.dom.Text;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Map;
-
 import modelv2.Expense;
-
 import modelv2.Group;
-import modelv2.User;
 import modelv2.UserSession;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Exxpense.MainActivity";
     private static final String EXPENSE = "EXPENSE";
-    private static final String EMPTY = "EMPTY";
+
+    private int topBarId;
+    private int heightOfListElement;
 
     private ConstraintLayout history;
     private TextView totalAmount;
     private ImageView ratioBar;
     private LinearLayout container;
-    private int id = 0;
-    private LottieAnimationView loadingIcon;
-    private ConstraintLayout blacker;
-    private int numberOfExpensesToListen;
-    private int heightOfPaymentListElementIdDp;
-    private ConstraintLayout tab1;
-    private ConstraintLayout tab2;
-    private HorizontalScrollView horizontalScrollView;
-    private ImageView logo;
-    private ImageView[] pageIndicators;
+    private SplashScreen splashScreen;
 
-    private static AccountHelper accountHelper;
-    private InfiniteScroller infiniteScroller;
+    private AccountHelper accountHelper;
+    private InfiniteScroller<Expense> infiniteScroller;
+    private HorizontalTabsScroller horizontalTabsScroller;
     private UserSession userSession;
 
-    public static void signOut() {
-        accountHelper.signOut(TAG);
-
-    }
 
 
     @Override
@@ -94,28 +54,29 @@ public class MainActivity extends AppCompatActivity {
 
         initializeViews();
 
-        heightOfPaymentListElementIdDp = 11 + 11 + 2 + 9 + 18 + 12 + 18;
-        MainActivity that = this;
-        infiniteScroller = new InfiniteScroller(container, heightOfPaymentListElementIdDp, new InfiniteScroller.SpecificOnClickListener() {
-            @Override
-            public void onClick(View view, Serializable object, int index) {
-                Intent intent = new Intent(that, ExpenseEditor.class);
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that, new Pair<>(history, "cont"));
-                intent.putExtra(EXPENSE, object);
-                startActivity(intent, options.toBundle());
-            }
-        }, new InfiniteScroller.OnPenultimatePageWasScrolled() {
-            @Override
-            public void onScrolled(int scrolledPages, int totalNumberOfPages, int scrolledElements) {
-                userSession.extendExpenseListeners();
-            }
-        }, ListElement::newInstance, this);
+        //heightOfListElement should be size of fragment_list_element.xml
+        //margin:11+text:11+margin:2+:smallText:9+image:18+:text12:margin:18
+        heightOfListElement = 11 + 11 + 2 + 9 + 18 + 12 + 18;
 
+        initializeInfiniteScroller();
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
+    }
 
-
-
+    private void initializeInfiniteScroller() {
+        MainActivity that = this;
+        infiniteScroller = new InfiniteScroller<>(container,
+                heightOfListElement,
+                (view, object, index) -> {
+                    Intent intent = new Intent(that, ExpenseEditor.class);
+                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that
+                            , new Pair<>(history, getString(R.string.animation_tag__history_title)));
+                    intent.putExtra(EXPENSE, object);
+                    startActivity(intent, options.toBundle());
+                }, (scrolledPages, totalNumberOfPages, scrolledElements)
+                -> userSession.extendExpenseListeners(),
+                ListElement::newInstance,
+                this);
     }
 
 
@@ -124,73 +85,43 @@ public class MainActivity extends AppCompatActivity {
         history = findViewById(R.id.history_container);
         totalAmount = findViewById(R.id.textView4);
         ratioBar = findViewById(R.id.imageView);
-        id = R.id.fragment;
-        loadingIcon = findViewById(R.id.number_loading);
-        blacker = findViewById(R.id.blacker);
-        tab1 = findViewById(R.id.constraintLayout);
-        tab2 = findViewById(R.id.tab2);
-        horizontalScrollView = findViewById(R.id.scrollViewHorizontal);
-        logo = findViewById(R.id.logo);
-        pageIndicators = new ImageView[2];
+        topBarId = R.id.fragment;
+        splashScreen = SplashScreen.newInstance();
+
+        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        transaction1.add(R.id.main, splashScreen, "SplashScreen");
+        transaction1.hide(splashScreen);
+        transaction1.commitNow();
+
+
+        ConstraintLayout tab1 = findViewById(R.id.constraintLayout);
+        ConstraintLayout tab2 = findViewById(R.id.tab2);
+        HorizontalScrollView horizontalScrollView = findViewById(R.id.scrollViewHorizontal);
+
+        ImageView[] pageIndicators = new ImageView[2];
         pageIndicators[0] = findViewById(R.id.imageView5);
         pageIndicators[1] = findViewById(R.id.imageView6);
 
-        initializeScrollTabs();
-        showSplashScreen();
+
+        horizontalTabsScroller = new HorizontalTabsScroller(tab1, tab2, horizontalScrollView);
+        horizontalTabsScroller.initializeScrollTabs(this, pageIndicators);
+
+        splashScreen.show();
 
     }
 
-    public void initializeScrollTabs() {
 
-        Point point = new Point();
-        this.getWindowManager().getDefaultDisplay().getSize(point);
-        int width = point.x;
-        ViewGroup.LayoutParams layoutParams = tab1.getLayoutParams();
-        layoutParams.width = width;
-        tab1.setLayoutParams(layoutParams);
-        layoutParams = tab2.getLayoutParams();
-        layoutParams.width = width / 3;
-        tab2.setLayoutParams(layoutParams);
-
-        final boolean[] scrolling = {false};
-        final boolean[] tab2IsActive = {false};// => final boolean[] tab1IsActive = {true};
-        horizontalScrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-            @Override
-            public void onScrollChanged() {
-                System.out.println(scrolling[0]);
-                if (!tab2IsActive[0]) {
-                    if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 >= 22) {
-                        tab2IsActive[0] = true;
-                        pageIndicators[0].setImageResource(R.drawable.circle_dark_grey);
-                        pageIndicators[1].setImageResource(R.drawable.circle_grey);
-                    }
-                    System.out.println(horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100);
-                    if (!scrolling[0]) {
-                        if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 >= 7) {
-                            horizontalScrollView.smoothScrollTo(width, 0);
-                        }
-                    }
-                } else {
-                    if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 <= 2) {
-                        tab2IsActive[0] = false;
-                        pageIndicators[0].setImageResource(R.drawable.circle_grey);
-                        pageIndicators[1].setImageResource(R.drawable.circle_dark_grey);
-                    }
-                    if (!scrolling[0]) {
-                        if (horizontalScrollView.getScrollX() / (float) (width + width / 3) * 100 <= 18) {
-                            horizontalScrollView.smoothScrollTo(0, 0);
-                        }
-                    }
-                }
-            }
-
-
-        });
-    }
-
-    public void startPaymentsList(View view) {
+    public void startPaymentsListActivity(View view) {
         Intent intent = new Intent(this, PaymentsList.class);
-        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this,
+                new Pair<>(history, getString(R.string.animation_tag__history_title)));
+        startActivity(intent, options.toBundle());
+    }
+
+    public void startAddExpenseActivity(View view) {
+        Intent intent = new Intent(this, ExpenseEditor.class);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this,
+                new Pair<>(history, getString(R.string.animation_tag__history_title)));
         startActivity(intent, options.toBundle());
     }
 
@@ -203,110 +134,85 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void addExpense(View view) {
-        Intent intent = new Intent(this, ExpenseEditor.class);
-        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, new Pair<>(history, "cont"));
-        intent.putExtra(EMPTY, "");
-        startActivity(intent, options.toBundle());
-    }
-
     private void initializeUserSession() {
         MainActivity that = this;
-        numberOfExpensesToListen = (((ScrollView) container.getParent()).getHeight()
-                / Utils.dpToPx(heightOfPaymentListElementIdDp, this) + 1) * 2;
+        int numberOfExpensesToListen = (((ScrollView) container.getParent()).getHeight()
+                / Utils.dpToPx(heightOfListElement, this) + 1) * 2;
 
         userSession = UserSession.getInstance();
         userSession.setExpensesToRead(numberOfExpensesToListen);
-        userSession.setOnCurrentGroupNull(new UserSession.OnCurrentGroupNull() {
-            @Override
-            public void onCurrentGroupNull() {
-                Intent intent = new Intent(that, CreateGroup.class);
-                startActivity(intent);
-            }
+        userSession.setOnCurrentGroupNull(() -> {
+            Intent createGroupActivity = new Intent(that, CreateGroup.class);
+            startActivity(createGroupActivity);
         });
-        userSession.setOnGroupUpdated(new UserSession.OnGroupUpdated() {
-            @Override
-            public void onGroupUpdated(modelv2.Group group) {
-                float total = calculateTotal(group);
-                setRatioBar(group, total);
-                totalAmount.setText(Utils.formatPriceLocale(total));
-                replaceTopBar();
-            }
+        userSession.setOnGroupUpdated(group -> {
+            float payedByUser = calculateTotal(group);
+            setRatioBar(group, payedByUser);
+            totalAmount.setText(Utils.formatPriceLocale(payedByUser));
+            replaceTopBar();
         });
-        userSession.setOnExpensesUpdated(new UserSession.OnExpensesUpdated() {
-            @Override
-            public void onExpensesUpdated(ArrayList<Expense> expenses) {
-                infiniteScroller.populate(expenses);
-            }
-        });
-        userSession.setOnExtraExpensesUpdated(new UserSession.OnExtraExpensesUpdated() {
-            @Override
-            public void onExtraExpensesUpdated(ArrayList<Expense> expenses) {
-                infiniteScroller.add(expenses);
-            }
-        });
+        userSession.setOnExpensesUpdated(expenses -> infiniteScroller.populate(expenses));
+        userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.add(expenses));
     }
 
     private float calculateTotal(Group group) {
-        float total = 0;
+        float total;
         try {
             total = group.getTotal(UserSession.getInstance().getCurrentUser());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException userNotInGroup) {
             total = 0f;
         }
         return total;
     }
 
 
-    private void setRatioBar(Group group, float total) {
-        Point size = new Point();
-        getWindowManager().getDefaultDisplay().getRealSize(size);
-        float absoluteTotal = group.getAbsoluteTotal();
-        int finalWidth = Float.valueOf(size.x * (total / absoluteTotal)).intValue();
-        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
-                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
-                finalWidth, ratioBar.getLayoutParams().height);
-        ratioBar.setAnimation(anim);
-        ratioBar.getLayoutParams().width = finalWidth;
-        if (total / absoluteTotal * 100 > 66) {
+    private void setRatioBar(Group group, float payedByCurrentUser) {
+        Point screenSizes = new Point();
+        getWindowManager().getDefaultDisplay().getRealSize(screenSizes);
+        float payedByGroup = group.getAbsoluteTotal();
+        float ratioUserPToGroupP = payedByCurrentUser / payedByGroup;
+        int ratioBarWidth = Float.valueOf(screenSizes.x * (ratioUserPToGroupP)).intValue();
+
+        animateRatioBarTo(ratioBarWidth);
+        setRatioBarColor(ratioUserPToGroupP);
+
+        splashScreen.hide();
+    }
+
+    private void setRatioBarColor(float ratio) {
+        final int GREEN_BAR_LIMIT_PERCENT = 66;
+        final int RED_BAR_LIMIT_PERCENT = 33;
+
+        if (ratio * 100 > GREEN_BAR_LIMIT_PERCENT) {
             ratioBar.setImageResource(R.drawable.background_accent_variant);
-        } else if (total / absoluteTotal * 100 < 33) {
+        } else if (ratio * 100 < RED_BAR_LIMIT_PERCENT) {
             ratioBar.setImageResource(R.drawable.background_accent);
         } else {
             ratioBar.setImageResource(R.drawable.background_teal);
         }
-        hideSplashScreen();
     }
 
-    private  void showSplashScreen(){
-        loadingIcon.setVisibility(View.VISIBLE);
-        blacker.setVisibility(View.VISIBLE);
-        logo.setVisibility(View.VISIBLE);
-        ((TextView)findViewById(R.id.textView3)).setText("");
-        ((TextView)findViewById(R.id.history)).setText("");
-        ((Button)findViewById(R.id.imageButton2)).setText("");
-        ((Button)findViewById(R.id.imageButton2)).setVisibility(View.INVISIBLE);
-        ((View)findViewById(R.id.floatingActionButton)).setVisibility(View.INVISIBLE);
+    private void animateRatioBarTo(int targetProgressBarWidth) {
+        ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
+                ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
+                targetProgressBarWidth, ratioBar.getLayoutParams().height);
+
+        ratioBar.setAnimation(anim);
+        ratioBar.getLayoutParams().width = targetProgressBarWidth;
     }
 
-    private  void hideSplashScreen(){
-        loadingIcon.setVisibility(View.INVISIBLE);
-        blacker.setVisibility(View.INVISIBLE);
-        logo.setVisibility(View.INVISIBLE);
-        ((TextView)findViewById(R.id.textView3)).setText(getString(R.string.your_balance));
-        ((TextView)findViewById(R.id.history)).setText(getString(R.string.history));
-        ((Button)findViewById(R.id.imageButton2)).setText(getString(R.string.payments));
-        ((Button)findViewById(R.id.imageButton2)).setVisibility(View.VISIBLE);
-        ((View)findViewById(R.id.floatingActionButton)).setVisibility(View.VISIBLE);
-    }
+
     private void replaceTopBar() {
+        TopBar topBar = TopBar.newInstance(true);
+        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG));
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        TopBar topBar = TopBar.newInstance(true);
         fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-        fragmentTransaction.replace(id, topBar);
+        fragmentTransaction.replace(topBarId, topBar);
         fragmentTransaction.commit();
-        id = topBar.getId();
+
+        topBarId = topBar.getId();
     }
 
     @Override
@@ -318,15 +224,7 @@ public class MainActivity extends AppCompatActivity {
                 infiniteScroller.populate(UserSession.getInstance().getCurrentGroup().getExpenses());
             }
         } else {
-            accountHelper.setSignInSuccessful(new AccountHelper.SignInSuccessful() {
-                @Override
-                public void signInSuccessful(FirebaseUser user) {
-                    initializeUserSession();
-
-
-
-                }
-            });
+            accountHelper.setSignInSuccessful(user -> initializeUserSession());
             accountHelper.signInUsingGoogle();
         }
     }
@@ -342,82 +240,52 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void logout(View view) {
-        accountHelper.signOut(TAG);
-    }
-
-    public void waitForConnection(View view) {
-        Utils.toastMessage("Pleas, wait for connection", this);
-    }
-
-    public void startHistory(View view) {
-
-    }
-
-    private boolean checkIfUserIsPayerOrBorrower(String id) {
-        for (Expense expense : userSession.getDebtExpenses()) {
-            if (expense.getPayer().getId().equals(id)) {
-                return true;
-            } else {
-                for (User borrower : expense.getBorrowers()) {
-                    if (borrower.getId().equals(id)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private void scrollToTab1() {
-        horizontalScrollView.post(new Runnable() {
-            @Override
-            public void run() {
-                horizontalScrollView.smoothScrollTo(0, 0);
-            }
-        });
-    }
 
     public void leaveGroup(View view) {
-        if (checkIfUserIsPayerOrBorrower(userSession.getCurrentUser().getId())) {
-            Utils.toastMessage("Please get or pay your expenses before leaving group.", this);
-            scrollToTab1();
-            startPaymentsList(view);
-        } else {
-            String buttonText = "Leave group";
-            if (userSession.amILastUser()) { // TODO:: Method to implement
-                buttonText = "Leave and delete group";
-            }
+        if (userSession.checkIfUserIsPayerOrBorrower(userSession.getCurrentUser().getId())) {
 
-            MainActivity that = this;
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Read this!");
-            alertDialog.setMessage("You are about to leave " + userSession.getCurrentShallowGroup().getGroupName() + "."
-                    + "You wont be able to see content of this group. If you are the last user in this group, it will be" +
-                    " deleted with all expenses. There is no going back to retrieve data.");
-            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, buttonText, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            Utils.toastMessage(getString(R.string.please_pay_before_leaving), this);
+
+            horizontalTabsScroller.scrollToTabOne();
+            startPaymentsListActivity(view);
+
+        } else {
+            showLeaveGroupWarning();
+            horizontalTabsScroller.scrollToTabOne();
+        }
+    }
+
+    private void showLeaveGroupWarning() {
+        String buttonText = getString(R.string.leave_group);
+        if (userSession.amILastUser()) { // TODO:: Method to implement
+            buttonText = getString(R.string.leaveAndDeleteGroup);
+        }
+
+        MainActivity that = this;
+
+
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+
+        alertDialog.setTitle(getString(R.string.read_this));
+        alertDialog.setMessage(Utils.getLeaveGroupWarning(this));
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, buttonText,
+                (dialog, which) -> {
                     if (!userSession.amILastUser()) {
                         try {
-                            userSession.leaveCurrentGroup();
-                        } catch (IllegalStateException e) {
-                            Utils.toastMessage(e.getMessage(), that);
+                            userSession.leaveCurrentGroup(this);
+                        } catch (IllegalStateException tooFewGroupsToLeave) {
+                            Utils.toastMessage(tooFewGroupsToLeave.getMessage(), that);
                         }
-
                     } else {
-                        userSession.leaveAndDeleteCurrentGroup();
+                        userSession.leaveAndDeleteCurrentGroup(this);
                     }
-                }
-            });
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+                });
 
-                }
-            });
-            alertDialog.show();
-            scrollToTab1();
-        }
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.cancel),
+                (dialog, which) -> {
+                    //closes dialog
+                });
+        alertDialog.show();
     }
 }

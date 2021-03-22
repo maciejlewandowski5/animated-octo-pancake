@@ -24,7 +24,8 @@ public class TopBar extends Fragment {
 
     private static final String ARG_PARAM2 = "param2";
 
-    RefreshCurrentGroup refreshCurrentGroup;
+    private RefreshCurrentGroup refreshCurrentGroup;
+    private LogOutInterface logOutInterface;
 
     private UserSession userSession;
     private Boolean menuVisible;
@@ -95,23 +96,19 @@ public class TopBar extends Fragment {
                                 } else if (itemTitle.equals(getString(R.string.create_new_group))) {
                                     Intent intent = new Intent(getActivity(), CreateGroup.class);
                                     requireActivity().startActivity(intent);
-                                }else if (itemTitle.equals(getString(R.string.share_group))){
-                                    // Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                                    // shareIntent.setType("text/plain");
-                                    // shareIntent.putExtra(Intent.EXTRA_TEXT,userSession.getCurrentGroup().getId());
-                                    //  requireActivity().startActivity(Intent.createChooser(shareIntent, "Share..."));
-                                    Intent intent = new Intent(requireActivity(),Share.class);
+                                } else if (itemTitle.equals(getString(R.string.share_group))) {
+                                    Intent intent = new Intent(requireActivity(), Share.class);
                                     requireActivity().startActivity(intent);
-                                }
-                                else if(itemTitle.equals(getString(R.string.logout))){
-                                    MainActivity.signOut();
+                                } else if (itemTitle.equals(getString(R.string.logout))) {
+                                    if (logOutInterface != null) {
+                                        logOutInterface.signOut();
+                                    }
                                 } else {
                                     ShallowGroup tmp = null;
                                     for (ShallowGroup group : userSession.getGroups()) {
                                         if (itemTitle.equals(group.getGroupName())) {
                                             tmp = group;
                                             break;
-
                                         }
                                     }
                                     if (tmp != null) {
@@ -134,7 +131,15 @@ public class TopBar extends Fragment {
 
     }
 
+    public void setLogOutInterface(LogOutInterface logOutInterface) {
+        this.logOutInterface = logOutInterface;
+    }
+
+    public interface LogOutInterface {
+        void signOut();
+    }
+
     public interface RefreshCurrentGroup {
-        public void refreshCurrentGroup(Map.Entry<String, String> group);
+        void refreshCurrentGroup(Map.Entry<String, String> group);
     }
 }

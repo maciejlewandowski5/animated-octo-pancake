@@ -1,9 +1,12 @@
 package modelv2;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +22,7 @@ import com.google.firebase.firestore.Source;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.messaging.RemoteMessageCreator;
+import com.maaps.expense.R;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -114,7 +118,7 @@ public class UserSession {
         return result;
     }
 
-    public void leaveCurrentGroup() throws IllegalStateException {
+    public void leaveCurrentGroup(Context context) throws IllegalStateException {
         ShallowGroup toLeave = currentShallowGroup;
         if (groups.size() > 0) {
             Group toLeaveHydrated = currentGroup;
@@ -139,7 +143,7 @@ public class UserSession {
             });
 
         } else {
-            throw new IllegalStateException("You need to have at leas one group");
+            throw new IllegalStateException(context.getString(R.string.you_need_at_least_one_group));
         }
     }
 
@@ -505,6 +509,22 @@ public class UserSession {
         this.onExtraExpensesUpdated = onExtraExpensesUpdated;
     }
 
+    public boolean checkIfUserIsPayerOrBorrower(String id) {
+        for (Expense expense : getDebtExpenses()) {
+            if (expense.getPayer().getId().equals(id)) {
+                return true;
+            } else {
+                for (User borrower : expense.getBorrowers()) {
+                    if (borrower.getId().equals(id)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
     private Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
         result.put("name", currentUser.getName());
@@ -525,8 +545,8 @@ public class UserSession {
         }
     }
 
-    public void leaveAndDeleteCurrentGroup() {
-        leaveCurrentGroup();
+    public void leaveAndDeleteCurrentGroup(Context context) {
+        leaveCurrentGroup(context);
         //TODO:: Delete group if no user in it
     }
 

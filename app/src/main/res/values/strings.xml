@@ -47,5 +47,14 @@
     <string name="delete_group">Delete group</string>
     <string name="leave_group">Leave group</string>
     <string name="default_notification_channel_id">groups</string>
+    <string name="animation_tag__history_title">cont</string>
+    <string name="please_wait_for_connection">Pleas, wait for connection</string>
+    <string name="please_pay_before_leaving">Please get or pay your expenses before leaving group.</string>
+    <string name="leaveAndDeleteGroup">Leave and delete group</string>
+    <string name="read_this">Read this!</string>
+    <string name="your_are_about_to_leave">\"You are about to leave \"</string>
+    <string name="not_see_content_not_going_back">You wont be able to see content of this group. If you are the last user in this group, it will be deleted with all expenses. There is no going back to retrieve data.</string>
+    <string name="you_need_at_least_one_group">You need to have at least one group</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

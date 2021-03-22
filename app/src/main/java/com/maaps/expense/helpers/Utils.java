@@ -7,6 +7,8 @@ import android.util.TypedValue;
 
 import android.widget.Toast;
 
+import com.maaps.expense.R;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -15,6 +17,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+
+import modelv2.UserSession;
 
 public class Utils {
 
@@ -32,6 +36,12 @@ public class Utils {
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
         cal.set(Calendar.HOUR_OF_DAY, cal.getActualMinimum(Calendar.HOUR_OF_DAY));
         return cal.getTime();
+    }
+
+    public static String getLeaveGroupWarning(Context context){
+       return context.getString(R.string.your_are_about_to_leave) +
+                UserSession.getInstance().getCurrentShallowGroup().getGroupName() + "."
+                + context.getString(R.string.not_see_content_not_going_back);
     }
 
 
