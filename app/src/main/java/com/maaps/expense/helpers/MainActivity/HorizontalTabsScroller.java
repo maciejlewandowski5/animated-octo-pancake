@@ -1,5 +1,6 @@
 package com.maaps.expense.helpers.MainActivity;
 
+import android.app.AlertDialog;
 import android.graphics.Point;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -8,7 +9,11 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.maaps.expense.MainActivity;
 import com.maaps.expense.R;
+import com.maaps.expense.helpers.Utils;
+
+import modelv2.UserSession;
 
 public class HorizontalTabsScroller {
 
@@ -21,6 +26,39 @@ public class HorizontalTabsScroller {
         this.tab1 = tab1;
         this.tab2 = tab2;
         this.horizontalScrollView = horizontalScrollView;
+    }
+
+    public void showLeaveGroupWarning(AppCompatActivity activity) {
+        String buttonText = activity.getString(R.string.leave_group);
+        UserSession userSession = UserSession.getInstance();
+        if (userSession.amILastUser()) { // TODO:: Method to implement
+            buttonText = activity.getString(R.string.leaveAndDeleteGroup);
+        }
+
+
+        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+
+        alertDialog.setTitle(activity.getString(R.string.read_this));
+        alertDialog.setMessage(Utils.getLeaveGroupWarning(activity));
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, buttonText,
+                (dialog, which) -> {
+                    if (!userSession.amILastUser()) {
+                        try {
+                            userSession.leaveCurrentGroup(activity);
+                        } catch (IllegalStateException tooFewGroupsToLeave) {
+                            Utils.toastMessage(tooFewGroupsToLeave.getMessage(),activity);
+                        }
+                    } else {
+                        userSession.leaveAndDeleteCurrentGroup(activity);
+                    }
+                });
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, activity.getString(R.string.cancel),
+                (dialog, which) -> {
+                    //closes dialog
+                });
+        alertDialog.show();
     }
 
     public void initializeScrollTabs(AppCompatActivity app,ImageView[] pageIndicators) {

@@ -1,5 +1,6 @@
 package com.maaps.expense;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -12,7 +13,13 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.maaps.expense.helpers.AccountHelper;
 
 import java.util.Map;
 
@@ -23,6 +30,7 @@ import modelv2.UserSession;
 public class TopBar extends Fragment {
 
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "Expense.TopBar";
 
     private RefreshCurrentGroup refreshCurrentGroup;
     private LogOutInterface logOutInterface;
@@ -141,5 +149,15 @@ public class TopBar extends Fragment {
 
     public interface RefreshCurrentGroup {
         void refreshCurrentGroup(Map.Entry<String, String> group);
+    }
+
+    public static int refreshTopBar(int previousTopBar, AppCompatActivity activity,TopBar topBar) {
+            FragmentManager fragmentManager = activity.getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            fragmentTransaction.replace(previousTopBar, topBar, String.valueOf(topBar.hashCode()));
+            fragmentTransaction.commit();
+
+        return topBar.getId();
     }
 }
