@@ -118,24 +118,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static void refreshCurrentGroup(Map.Entry<String, Object> group) {
-        Map.Entry<String, String> n = new Map.Entry<String, String>() {
-            @Override
-            public String getKey() {
-                return group.getKey();
-            }
-
-            @Override
-            public String getValue() {
-                return (String) group.getValue();
-            }
-
-            @Override
-            public String setValue(String value) {
-                return null;
-            }
-        };
-    }
 
     private void initializeViews() {
         container = findViewById(R.id.container);
