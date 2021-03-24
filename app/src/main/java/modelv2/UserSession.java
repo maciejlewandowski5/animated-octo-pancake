@@ -537,7 +537,7 @@ public class UserSession {
         return result;
     }
 
-    public boolean amILastUser() {
+    public boolean amILastUserInGroup() {
         if (currentGroup.getUsers().size() == 1) {
             return true;
         } else {

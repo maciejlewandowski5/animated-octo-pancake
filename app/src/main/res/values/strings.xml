@@ -35,7 +35,7 @@
     <string name="logout">Logout</string>
     <string name="privide_goroup_name">Please provide group name</string>
     <string name="provide_gorup_code">Please provide group code</string>
-    <string name="please_fill">Please provide fill all inputs</string>
+    <string name="please_fill">Please fill all inputs</string>
     <string name="share_group">Share group</string>
     <string name="invite_to_group">Invite to group</string>
     <string name="invite_collaborators_with_qrcode">Invite collaborators with QRCode</string>
@@ -56,5 +56,6 @@
     <string name="not_see_content_not_going_back">You wont be able to see content of this group. If you are the last user in this group, it will be deleted with all expenses. There is no going back to retrieve data.</string>
     <string name="you_need_at_least_one_group">You need to have at least one group</string>
     <string name="cancel">Cancel</string>
+    <string name="user_left_group_you_can_not_edit">This expense use, user who left group. You can not edit this expense. Please consider adding new expense.</string>
 
 </resources>

@@ -1,6 +1,5 @@
 package com.maaps.expense.helpers.MainActivity;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.widget.ImageView;
 
@@ -8,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.maaps.expense.R;
 import com.maaps.expense.helpers.ImageViewResizeAnimation;
-
-import java.util.Collections;
 
 import modelv2.Group;
 
@@ -21,20 +18,20 @@ public class RatioBar {
         this.ratioBar = ratioBar;
     }
 
-    public void initializeRadioBar(Group group, float payedByCurrentUser, AppCompatActivity activity) {
+    public void initialize(Group group, float payedByCurrentUser, AppCompatActivity activity) {
         Point screenSizes = new Point();
         activity.getWindowManager().getDefaultDisplay().getRealSize(screenSizes);
         float payedByGroup = group.getAbsoluteTotal();
         float ratioUserPToGroupP = payedByCurrentUser / payedByGroup;
         int ratioBarWidth = Float.valueOf(screenSizes.x * (ratioUserPToGroupP)).intValue();
 
-        animateRatioBarTo(ratioBarWidth);
-        setRatioBarColor(ratioUserPToGroupP);
+        animateToWidth(ratioBarWidth);
+        updateColor(ratioUserPToGroupP);
 
 
     }
 
-    private void setRatioBarColor(float ratio) {
+    private void updateColor(float ratio) {
         final int GREEN_BAR_LIMIT_PERCENT = 66;
         final int RED_BAR_LIMIT_PERCENT = 33;
 
@@ -47,13 +44,13 @@ public class RatioBar {
         }
     }
 
-    private void animateRatioBarTo(int targetProgressBarWidth) {
+    private void animateToWidth(int targetWidth) {
         ImageViewResizeAnimation anim = new ImageViewResizeAnimation(ratioBar,
                 ratioBar.getLayoutParams().width, ratioBar.getLayoutParams().height,
-                targetProgressBarWidth, ratioBar.getLayoutParams().height);
+                targetWidth, ratioBar.getLayoutParams().height);
 
         ratioBar.setAnimation(anim);
-        ratioBar.getLayoutParams().width = targetProgressBarWidth;
+        ratioBar.getLayoutParams().width = targetWidth;
     }
 
 }

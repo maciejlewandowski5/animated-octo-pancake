@@ -8,13 +8,16 @@ import androidx.fragment.app.DialogFragment;
 import android.text.format.DateFormat;
 import android.widget.TimePicker;
 
+import com.maaps.expense.helpers.ExpenseEditor.DateTimePicker;
+
 public class TimePickerFragment extends DialogFragment
         implements TimePickerDialog.OnTimeSetListener {
 
-    private ExpenseEditor expenseEditor;
 
-    public TimePickerFragment(ExpenseEditor expenseEditor) {
-    this.expenseEditor = expenseEditor;
+    private DateTimePicker dateTimePicker;
+
+    public TimePickerFragment(DateTimePicker expenseEditor) {
+    this.dateTimePicker = expenseEditor;
     }
 
     @Override
@@ -28,6 +31,6 @@ public class TimePickerFragment extends DialogFragment
     }
 
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        expenseEditor.setTime(hourOfDay, minute);
+        dateTimePicker.setTime(hourOfDay, minute);
     }
 }

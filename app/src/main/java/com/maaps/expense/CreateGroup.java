@@ -43,7 +43,6 @@ public class CreateGroup extends AppCompatActivity {
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT,"Join our group in exxpense with code: " + code);
         startActivity(Intent.createChooser(shareIntent, "Share..."));
-
     }
 
     @Override
@@ -52,7 +51,6 @@ public class CreateGroup extends AppCompatActivity {
         UserSession.getInstance().setOnGroupPushed(new UserSession.OnGroupPushed() {
             @Override
             public void onGroupPushed() {
-
                 UserSession.getInstance().endSession();
                 onBackPressed();
             }

@@ -1,12 +1,13 @@
 package com.maaps.expense;
 
 import android.app.ActivityOptions;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Pair;
 import android.view.View;
 import android.view.Window;
@@ -15,11 +16,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
 import com.maaps.expense.helpers.AccountHelper;
 import com.maaps.expense.helpers.InfiniteScroller;
 import com.maaps.expense.helpers.MainActivity.HorizontalTabsScroller;
 import com.maaps.expense.helpers.MainActivity.RatioBar;
 import com.maaps.expense.helpers.Utils;
+
+import java.io.Serializable;
+
 import modelv2.Expense;
 import modelv2.Group;
 import modelv2.UserSession;
@@ -49,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-        initializeViews();
+        prepareViews();
 
         //heightOfListElement should be size of fragment_list_element.xml
         //margin:11+text:11+margin:2+:smallText:9+image:18+:text12:margin:18
@@ -94,34 +99,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeInfiniteScroller() {
-        MainActivity that = this;
-        infiniteScroller = new InfiniteScroller<>(container,
+        infiniteScroller = new InfiniteScroller<>(
+                container,
                 heightOfListElement,
-                (view, object, index) -> {
-                    Intent intent = new Intent(that, ExpenseEditor.class);
-                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(that
-                            , new Pair<>(history, getString(R.string.animation_tag__history_title)));
-                    intent.putExtra(EXPENSE_ARG_FOR_EXPENSE_EDITOR, object);
-                    startActivity(intent, options.toBundle());
-                }, (scrolledPages, totalNumberOfPages, scrolledElements)
-                -> userSession.extendExpenseListeners(),
+                this::infiniteScrollerOnClickListener,
+                (scrolledPages, totalNumberOfPages, scrolledElements)
+                        -> userSession.extendExpenseListeners(),
                 ListElement::newInstance,
                 this);
     }
 
-    private void initializeViews() {
+    private void infiniteScrollerOnClickListener(View view, Object object, Integer index) {
+        Intent intent = new Intent(this, ExpenseEditor.class);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this
+                , new Pair<>(history, getString(R.string.animation_tag__history_title)));
+        intent.putExtra(EXPENSE_ARG_FOR_EXPENSE_EDITOR, (Serializable) object);
+        startActivity(intent, options.toBundle());
+    }
+
+    private void prepareViews() {
+        initializeSimpleViews();
+        prepareSplashScreenTransaction();
+        prepareHorizontalTabsScroller();
+        splashScreen.show();
+    }
+
+    private void initializeSimpleViews() {
         container = findViewById(R.id.container);
         history = findViewById(R.id.history_container);
         totalAmount = findViewById(R.id.textView4);
         ratioBar = new RatioBar(findViewById(R.id.imageView));
         topBarId = R.id.fragment;
-        splashScreen = SplashScreen.newInstance();
+    }
 
-        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
-        transaction1.add(R.id.main, splashScreen, "SplashScreen");
-        transaction1.hide(splashScreen);
-        transaction1.commitNow();
-
+    private void prepareHorizontalTabsScroller() {
         ConstraintLayout tab1 = findViewById(R.id.constraintLayout);
         ConstraintLayout tab2 = findViewById(R.id.tab2);
         HorizontalScrollView horizontalScrollView = findViewById(R.id.scrollViewHorizontal);
@@ -131,9 +142,15 @@ public class MainActivity extends AppCompatActivity {
         pageIndicators[1] = findViewById(R.id.imageView6);
 
         horizontalTabsScroller = new HorizontalTabsScroller(tab1, tab2, horizontalScrollView);
-        horizontalTabsScroller.initializeScrollTabs(this, pageIndicators);
+        horizontalTabsScroller.initialize(this, pageIndicators);
+    }
 
-        splashScreen.show();
+    private void prepareSplashScreenTransaction() {
+        splashScreen = SplashScreen.newInstance();
+        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        transaction1.add(R.id.main, splashScreen, "SplashScreen");
+        transaction1.hide(splashScreen);
+        transaction1.commitNow();
     }
 
     public void startPaymentsListActivity(View view) {
@@ -152,28 +169,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeUserSession() {
         MainActivity that = this;
-        int numberOfExpensesToListen = (((ScrollView) container.getParent()).getHeight()
-                / Utils.dpToPx(heightOfListElement, this) + 1) * 2; // for two pages, avoid zero
+        int numberOfExpensesToListen = calculateNumberOfExpensesToListen();
 
         userSession = UserSession.getInstance();
         userSession.setExpensesToRead(numberOfExpensesToListen);
-        userSession.setOnCurrentGroupNull(() -> {
-            Intent createGroupActivity = new Intent(that, CreateGroup.class);
-            startActivity(createGroupActivity);
-        });
-        userSession.setOnGroupUpdated(group -> {
-            float payedByUser = calculateTotal(group);
-            ratioBar.initializeRadioBar(group, payedByUser,this);
-            splashScreen.hide();
-            totalAmount.setText(Utils.formatPriceLocale(payedByUser));
-
-            TopBar topBar = TopBar.newInstance(true);
-            topBar.setLogOutInterface(() -> accountHelper.signOut(TAG));
-            topBarId = TopBar.refreshTopBar(topBarId,this,topBar);
-
-        });
+        userSession.setOnCurrentGroupNull(this::startCreateGroupActivity);
+        userSession.setOnGroupUpdated(this::initializeOnGroupUpdated);
         userSession.setOnExpensesUpdated(expenses -> infiniteScroller.populate(expenses));
         userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.add(expenses));
+    }
+
+    private int calculateNumberOfExpensesToListen() {
+        return (((ScrollView) container.getParent()).getHeight()
+                / Utils.dpToPx(heightOfListElement, this) + 1) * 2; // for two pages, avoid zero
+    }
+
+    private void startCreateGroupActivity() {
+        Intent createGroupActivity = new Intent(this, CreateGroup.class);
+        startActivity(createGroupActivity);
+    }
+
+    private void initializeOnGroupUpdated(Group group) {
+        float payedByUser = calculateTotal(group);
+        ratioBar.initialize(group, payedByUser, this);
+        splashScreen.hide();
+        totalAmount.setText(Utils.formatPriceLocale(payedByUser));
+
+        TopBar topBar = TopBar.newInstance(true);
+        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG));
+        topBarId = TopBar.refreshTopBar(topBarId, this, topBar);
     }
 
     private float calculateTotal(Group group) {
@@ -187,17 +211,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void attemptToLeaveGroup(View view) {
+        horizontalTabsScroller.scrollToTabOne();
         if (userSession.checkIfUserIsPayerOrBorrower(userSession.getCurrentUser().getId())) {
-
             Utils.toastMessage(getString(R.string.please_pay_before_leaving), this);
-
-            horizontalTabsScroller.scrollToTabOne();
             startPaymentsListActivity(view);
-
         } else {
             horizontalTabsScroller.showLeaveGroupWarning(this);
-            horizontalTabsScroller.scrollToTabOne();
         }
     }
-
 }

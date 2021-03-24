@@ -3,6 +3,7 @@ package com.maaps.expense.helpers;
 
 import android.content.Context;
 
+import android.text.InputFilter;
 import android.util.TypedValue;
 
 import android.widget.Toast;
@@ -13,6 +14,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -38,12 +40,23 @@ public class Utils {
         return cal.getTime();
     }
 
+    public static String formatDateLocale(Date date){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+                "hh:mm dd-MM-yyyy",
+                Locale.getDefault());
+        return simpleDateFormat.format(date);
+    }
+
     public static String getLeaveGroupWarning(Context context){
        return context.getString(R.string.your_are_about_to_leave) +
                 UserSession.getInstance().getCurrentShallowGroup().getGroupName() + "."
                 + context.getString(R.string.not_see_content_not_going_back);
     }
 
+
+    public static InputFilter[] priceFormatFilter(){
+        return new InputFilter[]{new DecimalDigitsInputFilter(12, 2)};
+    }
 
 
     public static void toastError(Context context) {

@@ -1,7 +1,12 @@
 package com.maaps.expense;
 
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,5 +51,14 @@ public class BorrowerFragment extends Fragment {
         userName.setText(user.getName());
 
         return root;
+    }
+
+    public static void displayBorrower(User borrower,int parentId,AppCompatActivity activity){
+    FragmentManager fragmentManager = activity.getSupportFragmentManager();
+    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    Fragment fragment = BorrowerFragment.newInstance(borrower);
+            fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.fade_out);
+            fragmentTransaction.add(parentId, fragment, borrower.getName());
+            fragmentTransaction.commit();
     }
 }
