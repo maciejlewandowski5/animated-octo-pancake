@@ -1,37 +1,24 @@
 package com.maaps.expense;
 
-
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
-
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-
-import com.maaps.expense.helpers.InfiniteScroller;
-
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import com.google.firebase.auth.FirebaseAuth;
-
-import java.io.Serializable;
+import com.maaps.expense.helpers.InfiniteScroller;
 import java.util.ArrayList;
-
 import modelv2.Expense;
-
 import modelv2.UserSession;
 
 public class PaymentsList extends AppCompatActivity {
 
-    private static final String TAG = "s";
-    ArrayList<modelv2.Expense> debts;
-    ArrayList<modelv2.Expense> toPay;
-
+    ArrayList<modelv2.Expense> allDebts;
+    ArrayList<modelv2.Expense> debtsToPay;
     InfiniteScroller<modelv2.Expense> infiniteScroller;
 
     @Override
@@ -40,72 +27,102 @@ public class PaymentsList extends AppCompatActivity {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_payments_list);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment topBar = TopBar.newInstance(false);
-        fragmentTransaction.replace(R.id.fragment, topBar);
-        fragmentTransaction.commit();
+        initializeViewsAndNonViewsParameters();
+        initializeInfiniteScroller();
+    }
 
-        debts = new ArrayList<>();
-        toPay = new ArrayList<>();
+    private void initializeViewsAndNonViewsParameters() {
+        TopBar topBar = TopBar.newInstance(true);
+        TopBar.refreshTopBar(R.id.fragment, this, topBar);
+        allDebts = new ArrayList<>();
+        debtsToPay = new ArrayList<>();
+    }
 
+    private void initializeInfiniteScroller() {
+
+        //see fragment_payment_list_element.xml
+        //margin:29+image:9+margin:29
+        int heightOfPaymentListElementInPx = 29+9+29;
         LinearLayout container = findViewById(R.id.container);
+        infiniteScroller = new InfiniteScroller<>(
+                container,
+                29 + 9 + 29,
+                (paymentListElementView, object, index) -> {
 
-        infiniteScroller = new InfiniteScroller<modelv2.Expense>(container, 29 + 9 + 29, new InfiniteScroller.SpecificOnClickListener() {
-            @Override
-            public void onClick(View view, Serializable object, int index) {
+                    initializeInfiniteScrollerOnClickLogic(paymentListElementView, (Expense) object);
 
-                Expense expense = (modelv2.Expense) object;
-                CheckBox checkBox = ((CheckBox) ((ConstraintLayout) ((FrameLayout) ((ConstraintLayout) view.getParent())
-                        .getChildAt(1))
-                        .getChildAt(0))
-                        .getChildAt(2));
-
-                ConstraintLayout constraintLayout = ((ConstraintLayout) view.getParent());
-
-                checkBox.setChecked(!checkBox.isChecked());
-                if (checkBox.isChecked()) {
-                    if (expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                        constraintLayout.setBackgroundColor(getColor(R.color.accent_secondary_transparent));
-                    } else if (expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                        constraintLayout.setBackgroundColor(getColor(R.color.accent_transparent));
-                    } else {
-                        constraintLayout.setBackgroundColor(getColor(R.color.accent_variant_transparent));
-                    }
-                    toPay.add(expense);
-                } else {
-                    constraintLayout.setBackgroundColor(getColor(R.color.transparent));
-                    toPay.remove(expense);
-                }
-
-
-            }
-        }, new InfiniteScroller.OnPenultimatePageWasScrolled() {
-            @Override
-            public void onScrolled(int scrolledPages, int totalNumberOfPages, int scrolledElements) {
-
-            }
+                }, (scrolledPages, totalNumberOfPages, scrolledElements) -> {
         }, PaymentListElement::newInstance, this);
+    }
 
+    private void initializeInfiniteScrollerOnClickLogic(View paymentListElementView, Expense expense) {
+        CheckBox checkBox = extractCheckBox(paymentListElementView);
+        ConstraintLayout elementContainer = ((ConstraintLayout) paymentListElementView.getParent());
 
+        checkBox.setChecked(!checkBox.isChecked());
+        if (checkBox.isChecked()) {
+            setColorBasedOnExpense(expense, elementContainer);
+            debtsToPay.add(expense);
+        } else {
+            setBackgroundColor(
+                    elementContainer,
+                    R.color.transparent);
+            debtsToPay.remove(expense);
+        }
+    }
+
+    private void setColorBasedOnExpense(Expense expense, ConstraintLayout elementContainer) {
+        if (isCurrentUserAPayer(expense)) {
+            setBackgroundColor(
+                    elementContainer,
+                    R.color.accent_secondary_transparent);
+        } else if (isCurrentUserABorrower(expense)) {
+            setBackgroundColor(
+                    elementContainer,
+                    R.color.accent_transparent);
+        } else {
+            setBackgroundColor(
+                    elementContainer,
+                    R.color.accent_variant_transparent);
+        }
+    }
+
+    private void setBackgroundColor(ConstraintLayout constraintLayout, int colorId) {
+        constraintLayout.setBackgroundColor(ContextCompat.getColor(
+                this,
+                colorId));
+    }
+
+    private boolean isCurrentUserABorrower(Expense expense) {
+        return expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
+    }
+
+    private boolean isCurrentUserAPayer(Expense expense) {
+        return expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
+    }
+
+    private CheckBox extractCheckBox(View view) {
+        int frameLIndex = 1;
+        int constraintLIndex = 0;
+        int checkBoxLIndex = 2;
+
+        ConstraintLayout constraintLayout = (ConstraintLayout) view.getParent();
+        FrameLayout frameLayout = (FrameLayout) constraintLayout.getChildAt(frameLIndex);
+        ConstraintLayout checkboxParent = (ConstraintLayout) frameLayout.getChildAt(constraintLIndex);
+
+        return (CheckBox) checkboxParent.getChildAt(checkBoxLIndex);
     }
 
     public void evenChecked(View view) {
         UserSession userSession = UserSession.getInstance();
-        //toPay.forEach(userSession::addExpense);
-        userSession.addExpenses(toPay,0);
+        userSession.addExpenses(debtsToPay, 0);
         onBackPressed();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        UserSession.getInstance().setOnDebtUpdated(new UserSession.OnDeptUpdated() {
-            @Override
-            public void onDebtUpdated(ArrayList<modelv2.Expense> expenses) {
-                infiniteScroller.populate(expenses);
-            }
-        });
+        UserSession.getInstance().setOnDebtUpdated(expenses -> infiniteScroller.populate(expenses));
         infiniteScroller.populate(UserSession.getInstance().getDebtExpenses());
 
     }
@@ -119,6 +136,5 @@ public class PaymentsList extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
     }
 }

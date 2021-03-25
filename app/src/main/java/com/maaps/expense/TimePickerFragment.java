@@ -2,24 +2,28 @@ package com.maaps.expense;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;
-import android.icu.util.Calendar;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import android.text.format.DateFormat;
 import android.widget.TimePicker;
 
 import com.maaps.expense.helpers.ExpenseEditor.DateTimePicker;
 
+import java.util.Calendar;
+
 public class TimePickerFragment extends DialogFragment
         implements TimePickerDialog.OnTimeSetListener {
 
 
-    private DateTimePicker dateTimePicker;
+    private final DateTimePicker dateTimePicker;
 
     public TimePickerFragment(DateTimePicker expenseEditor) {
     this.dateTimePicker = expenseEditor;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Calendar c = Calendar.getInstance();

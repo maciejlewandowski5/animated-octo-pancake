@@ -21,20 +21,38 @@ public class Share extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_share);
+
+        id = UserSession.getInstance().getCurrentGroup().getId();
+
+        initializeTitleAsGroupName();
+        initializeQRCode();
+    }
+
+    private void initializeQRCode() {
+        ImageView imageView = findViewById(R.id.imageView4);
+        setImageContentAsIdQRCode(imageView);
+    }
+
+    private void initializeTitleAsGroupName() {
         TextView title = findViewById(R.id.textView14);
         String newTitle = UserSession.getInstance().getCurrentShallowGroup().getGroupName();
         title.setText(newTitle);
-// override the image type to be JPG
-        ImageView imageView = findViewById(R.id.imageView4);
-        id = UserSession.getInstance().getCurrentGroup().getId();
-        imageView.setImageBitmap(QRCode.from(id).withSize(500,500).withColor(0xFF222831, 0xEEEEEEEE).to(ImageType.BMP).bitmap());
+    }
 
+    private void setImageContentAsIdQRCode(ImageView imageView) {
+        imageView.setImageBitmap(
+                QRCode.
+                from(id).
+                        withSize(500,500).
+                        withColor(0xFF222831, 0xEEEEEEEE).
+                        to(ImageType.BMP).
+                        bitmap());
     }
 
     public void share(View view) {
          Intent shareIntent = new Intent(Intent.ACTION_SEND);
          shareIntent.setType("text/plain");
          shareIntent.putExtra(Intent.EXTRA_TEXT,id);
-          startActivity(Intent.createChooser(shareIntent, "Share..."));
+          startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
     }
 }

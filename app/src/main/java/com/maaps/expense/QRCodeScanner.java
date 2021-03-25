@@ -18,8 +18,8 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
 public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHandler {
     private ZXingScannerView mScannerView;
-    private String TAG = "QRCodeScanner";
     private static final int MY_CAMERA_REQUEST_CODE = 100;
+    private static final String OPERATED_BAR_CODE_TYPE = "QR_CODE";
 
 
     @Override
@@ -28,18 +28,32 @@ public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHa
         mScannerView = new ZXingScannerView(this);
         setContentView(mScannerView);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        if (!isCameraPermissionGranted()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.CAMERA},
+                    MY_CAMERA_REQUEST_CODE);
         }
+
+    }
+
+    private boolean isCameraPermissionGranted() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if(requestCode==MY_CAMERA_REQUEST_CODE){
             if (grantResults[0]==PackageManager.PERMISSION_DENIED){
-                Utils.toastMessageLong(getString(R.string.camera_permission_rationale),this);
+                Utils.toastMessageLong(
+                        getString(R.string.camera_permission_rationale),
+                        this);
                 onBackPressed();
             }
         }
@@ -55,8 +69,6 @@ public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHa
     @Override
     protected void onStart() {
         super.onStart();
-        QRCodeScanner that = this;
-
     }
 
     @Override
@@ -73,14 +85,18 @@ public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHa
 
     @Override
     public void handleResult(Result rawResult) {
-        if (rawResult.getBarcodeFormat().toString().equals("QR_CODE")) {
+
+        if (rawResult.getBarcodeFormat().toString().equals(OPERATED_BAR_CODE_TYPE)) {
             Intent data = new Intent();
             data.setData(Uri.parse(rawResult.getText()));
             setResult(RESULT_OK, data);
             finish();
         }else{
             mScannerView.resumeCameraPreview(this);
-            Utils.toastMessage("Please, scan QRCode from another application",this);
+            Utils.toastMessage(getString(R.string.plese_scan_from)
+                    +getString(R.string.app_name)+
+                    " "+
+                    getString(R.string.application),this);
         }
     }
 

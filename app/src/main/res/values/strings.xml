@@ -57,5 +57,9 @@
     <string name="you_need_at_least_one_group">You need to have at least one group</string>
     <string name="cancel">Cancel</string>
     <string name="user_left_group_you_can_not_edit">This expense use, user who left group. You can not edit this expense. Please consider adding new expense.</string>
+    <string name="no_group_with_code">No group with provided code</string>
+    <string name="plese_scan_from">\"Please, scan QRCode from another \"</string>
+    <string name="application">\"application\"</string>
+    <string name="share">Share...</string>
 
 </resources>

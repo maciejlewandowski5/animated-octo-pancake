@@ -5,23 +5,20 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.maaps.expense.helpers.Utils;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 
 import modelv2.Expense;
 
 
 public class PaymentListElement extends Fragment {
 
-    private static final String ARG_PARAM1 = "param1";
-
+    private static final String ARG_PARAM1 = "expense";
     private Expense expense;
 
 
@@ -46,20 +43,39 @@ public class PaymentListElement extends Fragment {
         }
     }
 
-    private void expenseFormatter(TextView amount, TextView userName,ImageView circle, TextView borrowerName) {
-        DecimalFormat format = new DecimalFormat("#.##");
-        amount.setText(format.format(expense.getAmount()));
-        String userNameString =expense.getPayer().getName();//.substring(0,8)+"...";
-        userName.setText(userNameString);
-        borrowerName.setText(expense.getBorrowers().get(0).getName());
-        if(expense.getPayer().getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-            circle.setImageResource(R.drawable.circle_red);
-        }else if(expense.getBorrowers().get(0).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-            circle.setImageResource(R.drawable.cricle_teal);
+    private void expenseFormatter(
+            TextView amount,
+            TextView userName,ImageView circle,
+            TextView borrowerName) {
 
+        amount.setText(Utils.formatPriceLocale(expense.getAmount().floatValue()));
+        userName.setText(expense.getPayer().getName());
+
+        //....getBorrowers().get(0) <- 0 because in payments list expenses always have one borrower.
+        borrowerName.setText(expense.getBorrowers().get(0).getName());
+
+        initializeCircleColor(circle);
+    }
+
+    private void initializeCircleColor(ImageView circle) {
+        if(isCurrentUserAPayer()) {
+            circle.setImageResource(R.drawable.circle_red);
+        }else if(isCurrentUserABorrower()){
+            circle.setImageResource(R.drawable.cricle_teal);
         }else{
             circle.setImageResource(R.drawable.cricle_green);
         }
+    }
+
+    private boolean isCurrentUserABorrower() {
+        //....getBorrowers().get(0) <- 0 because in payments list expenses always have one borrower.
+        return expense.getBorrowers().get(0).getId().equals(
+                FirebaseAuth.getInstance().getCurrentUser().getUid());
+    }
+
+    private boolean isCurrentUserAPayer() {
+        return expense.getPayer().getId().equals(
+                FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     @Override
@@ -67,7 +83,7 @@ public class PaymentListElement extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_payment_list_element, container, false);
         if (expense != null) {
-            CheckBox checkBox = root.findViewById(R.id.checkbox);
+
             TextView amount = root.findViewById(R.id.amount);
             TextView userName = root.findViewById(R.id.user_name);
             ImageView circle = root.findViewById(R.id.circle);
@@ -75,16 +91,6 @@ public class PaymentListElement extends Fragment {
 
             expenseFormatter(amount, userName,circle,borrower);
 
-            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        //TODO:: add expense
-
-
-                    }
-                }
-            });
         }
         return root;
 

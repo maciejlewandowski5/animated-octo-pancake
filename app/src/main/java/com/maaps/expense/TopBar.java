@@ -1,10 +1,8 @@
 package com.maaps.expense;
 
-import android.app.Activity;
+
 import android.content.Intent;
 import android.os.Bundle;
-
-
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,29 +10,20 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
-import com.maaps.expense.helpers.AccountHelper;
-
 import java.util.Map;
-
 import modelv2.ShallowGroup;
 import modelv2.UserSession;
 
 
 public class TopBar extends Fragment {
 
-    private static final String ARG_PARAM2 = "param2";
-    private static final String TAG = "Expense.TopBar";
+    private static final String ARG_PARAM2 = "menu_visible";
 
-    private RefreshCurrentGroup refreshCurrentGroup;
     private LogOutInterface logOutInterface;
-
     private UserSession userSession;
     private Boolean menuVisible;
 
@@ -42,11 +31,6 @@ public class TopBar extends Fragment {
     public TopBar() {
         // Required empty public constructor
     }
-
-    public void setRefreshCurrentGroup(RefreshCurrentGroup refreshCurrentGroup) {
-        this.refreshCurrentGroup = refreshCurrentGroup;
-    }
-
 
     public static TopBar newInstance(Boolean menuVisible) {
         TopBar fragment = new TopBar();
@@ -79,64 +63,97 @@ public class TopBar extends Fragment {
             title.setText(userSession.getCurrentShallowGroup().getGroupName());
             code.setText(userSession.getCurrentShallowGroup().getGroupId());
             if (menuVisible) {
-
-                menuIcon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PopupMenu popupMenu = new PopupMenu(getActivity(), menuIcon);
-                        popupMenu.getMenu().add(R.string.join_new_group);
-                        popupMenu.getMenu().add(R.string.create_new_group);
-                        popupMenu.getMenu().add(getString(R.string.share_group));
-                        for (ShallowGroup group : userSession.getGroups()) {
-                            if (!group.getGroupId().equals(userSession.getCurrentShallowGroup().getGroupId())) {
-                                popupMenu.getMenu().add(group.getGroupName());
-                            }
-                        }
-                        popupMenu.getMenu().add(R.string.logout);
-
-                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem item) {
-                                CharSequence itemTitle = item.getTitle();
-                                if (itemTitle.equals(getString(R.string.join_new_group))) {
-                                    Intent intent = new Intent(getActivity(), JoinGroup.class);
-                                    requireActivity().startActivity(intent);
-                                } else if (itemTitle.equals(getString(R.string.create_new_group))) {
-                                    Intent intent = new Intent(getActivity(), CreateGroup.class);
-                                    requireActivity().startActivity(intent);
-                                } else if (itemTitle.equals(getString(R.string.share_group))) {
-                                    Intent intent = new Intent(requireActivity(), Share.class);
-                                    requireActivity().startActivity(intent);
-                                } else if (itemTitle.equals(getString(R.string.logout))) {
-                                    if (logOutInterface != null) {
-                                        logOutInterface.signOut();
-                                    }
-                                } else {
-                                    ShallowGroup tmp = null;
-                                    for (ShallowGroup group : userSession.getGroups()) {
-                                        if (itemTitle.equals(group.getGroupName())) {
-                                            tmp = group;
-                                            break;
-                                        }
-                                    }
-                                    if (tmp != null) {
-                                        userSession.changeCurrentGroup(tmp);
-                                    }
-                                }
-                                return false;
-                            }
-                        });
-
-
-                        popupMenu.show();
-                    }
-                });
+                menuIcon.setOnClickListener(v -> initializeMenuIconOnClickLogic(menuIcon));
             } else {
                 menuIcon.setVisibility(View.INVISIBLE);
             }
         }
         return root;
 
+    }
+
+    private void initializeMenuIconOnClickLogic(ImageView menuIcon) {
+        PopupMenu programMenu = createPopUpMenu(menuIcon);
+        programMenu.setOnMenuItemClickListener(
+                TopBar.this::initializePopUpMenuOnClickLogic);
+        programMenu.show();
+    }
+
+    private PopupMenu createPopUpMenu(ImageView menuIcon) {
+        PopupMenu popupMenu = new PopupMenu(getActivity(), menuIcon);
+        popupMenu.getMenu().add(R.string.join_new_group);
+        popupMenu.getMenu().add(R.string.create_new_group);
+        popupMenu.getMenu().add(getString(R.string.share_group));
+
+        addGroupsToPopUpMenu(popupMenu);
+
+        popupMenu.getMenu().add(R.string.logout);
+
+        return popupMenu;
+    }
+
+    private void addGroupsToPopUpMenu(PopupMenu popupMenu) {
+        for (ShallowGroup group : userSession.getGroups()) {
+            if (!group.getGroupId().equals(userSession.getCurrentShallowGroup().getGroupId())) {
+                popupMenu.getMenu().add(group.getGroupName());
+            }
+        }
+    }
+
+    private boolean initializePopUpMenuOnClickLogic(MenuItem item) {
+        CharSequence clickedItem = item.getTitle();
+
+        if (clickedItem.equals(getString(R.string.join_new_group))) {
+            startJoinGroupActivity();
+
+        } else if (clickedItem.equals(getString(R.string.create_new_group))) {
+            startCreateGroupActivity();
+
+        } else if (clickedItem.equals(getString(R.string.share_group))) {
+            startShareGroupActivity();
+
+        } else if (clickedItem.equals(getString(R.string.logout))) {
+            logOut();
+
+        } else {
+            changeGroup(clickedItem);
+
+        }
+        return false;
+    }
+
+    private void logOut() {
+        if (logOutInterface != null) {
+            logOutInterface.signOut();
+        }
+    }
+
+    private void changeGroup(CharSequence clickedItem) {
+        ShallowGroup clickedGroup = null;
+        for (ShallowGroup group : userSession.getGroups()) {
+            if (clickedItem.equals(group.getGroupName())) {
+                clickedGroup = group;
+                break;
+            }
+        }
+        if (clickedGroup != null) {
+            userSession.changeCurrentGroup(clickedGroup);
+        }
+    }
+
+    private void startShareGroupActivity() {
+        Intent intent = new Intent(requireActivity(), Share.class);
+        requireActivity().startActivity(intent);
+    }
+
+    private void startCreateGroupActivity() {
+        Intent intent = new Intent(getActivity(), CreateGroup.class);
+        requireActivity().startActivity(intent);
+    }
+
+    private void startJoinGroupActivity() {
+        Intent intent = new Intent(getActivity(), JoinGroup.class);
+        requireActivity().startActivity(intent);
     }
 
     public void setLogOutInterface(LogOutInterface logOutInterface) {
@@ -147,9 +164,6 @@ public class TopBar extends Fragment {
         void signOut();
     }
 
-    public interface RefreshCurrentGroup {
-        void refreshCurrentGroup(Map.Entry<String, String> group);
-    }
 
     public static int refreshTopBar(int previousTopBar, AppCompatActivity activity,TopBar topBar) {
             FragmentManager fragmentManager = activity.getSupportFragmentManager();

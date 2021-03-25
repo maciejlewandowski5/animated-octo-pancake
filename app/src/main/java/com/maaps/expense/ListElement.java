@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.maaps.expense.helpers.Utils;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -15,7 +17,7 @@ import java.util.Locale;
 
 public class ListElement extends Fragment {
 
-    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM1 = "expense";
     private modelv2.Expense expense;
 
     public ListElement() {
@@ -52,12 +54,9 @@ public class ListElement extends Fragment {
             title.setText(expense.getName());
             user.setText(expense.getPayer().getName());
 
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+            date.setText(Utils.formatDateLocale(expense.getDateTime()));
 
-            date.setText(simpleDateFormat.format(expense.getDateTime()));
-
-            DecimalFormat format = new DecimalFormat("#.##");
-            amount.setText(format.format(expense.getAmount()));
+            amount.setText(Utils.formatPriceLocale(expense.getAmount().floatValue()));
         }
         return root;
     }
