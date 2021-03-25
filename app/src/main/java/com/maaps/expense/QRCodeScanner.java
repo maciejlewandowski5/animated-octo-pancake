@@ -28,12 +28,13 @@ public class QRCodeScanner extends Activity implements ZXingScannerView.ResultHa
         mScannerView = new ZXingScannerView(this);
         setContentView(mScannerView);
 
-        if (!isCameraPermissionGranted()) {
+        if (isCameraPermissionGranted()) {
             ActivityCompat.requestPermissions(
                     this,
                     new String[]{Manifest.permission.CAMERA},
                     MY_CAMERA_REQUEST_CODE);
         }
+
 
     }
 

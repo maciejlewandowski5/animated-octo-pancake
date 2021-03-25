@@ -1,18 +1,17 @@
 <resources>
     <string name="app_name">Expense</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="set_name_for_group">Set name</string>
-    <string name="example_code">XXXXXX</string>
+    <string name="example_code" translatable="false">XXXXXX</string>
     <string name="join_new_group">Join group</string>
     <string name="create_new_group">Create new group</string>
     <string name="your_balance">Your balance</string>
-    <string name="_0">0</string>
+    <string name="_0" translatable="false">0</string>
     <string name="history">History</string>
     <string name="title">title</string>
     <string name="user">user</string>
-    <string name="_21_02_2021">21-02-2021</string>
-    <string name="dd_mm_yyyy">dd-MM-yyyy</string>
+    <string name="_21_02_2021" translatable="false">21–02–2021</string>
+    <string name="dd_mm_yyyy" translatable="false">dd-MM-yyyy</string>
     <string name="edit_expense">Edit expense</string>
     <string name="name">name</string>
     <string name="amount">Amount</string>
@@ -24,7 +23,7 @@
     <string name="sa">Everyone</string>
     <string name="payments">Payments</string>
     <string name="code">Code</string>
-    <string name="ex_code">XYZ123</string>
+    <string name="ex_code" translatable="false">XYZ123</string>
     <string name="your_name">Your name</string>
     <string name="invite_collaborators_with_code">Invite collaborators with code</string>
     <string name="group_name">Group name</string>
@@ -47,7 +46,7 @@
     <string name="delete_group">Delete group</string>
     <string name="leave_group">Leave group</string>
     <string name="default_notification_channel_id">groups</string>
-    <string name="animation_tag__history_title">cont</string>
+    <string name="animation_tag__history_title" translatable="false">cont</string>
     <string name="please_wait_for_connection">Pleas, wait for connection</string>
     <string name="please_pay_before_leaving">Please get or pay your expenses before leaving group.</string>
     <string name="leaveAndDeleteGroup">Leave and delete group</string>
@@ -60,22 +59,21 @@
     <string name="no_group_with_code">No group with provided code</string>
     <string name="plese_scan_from">\"Please, scan QRCode from another \"</string>
     <string name="application">\"application\"</string>
-    <string name="share">Share...</string>
+    <string name="share">Share…</string>
     <string name="you_sign_out">Signed out</string>
     <string name="share_icon">share icon</string>
     <string name="add_button">Add button</string>
-    <string name="_42_42">42.42</string>
+    <string name="_42_42" translatable="false">42.42</string>
     <string name="plus_sign">plus sign</string>
     <string name="with_qr_code">with QR code</string>
     <string name="active_page_indicator">active page indicator</string>
     <string name="inactive_page_indicator">inactive page indicator</string>
-    <string name="payed_amount_ratio_bar_indicator">payed amount ratio bar indicator</string>
+    <string name="payed_amount_ratio_bar_indicator">paid amount ratio bar indicator</string>
     <string name="qr_code">QR Code</string>
-    <string name="textview">TextView</string>
     <string name="border_line">border line</string>
     <string name="payment_indicator">payment indicator</string>
     <string name="checkbox">checkbox</string>
-    <string name="textview">TextView</string>
+    <string name="textview" translatable="false">TextView</string>
     <string name="expense_logo">Expense logo</string>
     <string name="menu_icon">menu icon</string>
 

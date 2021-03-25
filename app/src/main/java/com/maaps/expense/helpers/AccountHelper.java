@@ -68,8 +68,14 @@ public class AccountHelper {
     }
 
     public void signInUsingGoogle() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        activity.startActivityForResult(signInIntent, RC_SIGN_IN);
+        if(firebaseAuth.getCurrentUser()==null) {
+            Intent signInIntent = googleSignInClient.getSignInIntent();
+            activity.startActivityForResult(signInIntent, RC_SIGN_IN);
+        }else{
+            if (signInSuccessful != null) {
+                signInSuccessful.signInSuccessful(firebaseAuth.getCurrentUser());
+            }
+        }
     }
 
     public int getRCSGININCode() {

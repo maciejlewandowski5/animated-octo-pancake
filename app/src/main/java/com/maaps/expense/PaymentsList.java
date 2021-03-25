@@ -89,11 +89,11 @@ public class PaymentsList extends AppCompatActivity {
         } else if (isCurrentUserABorrower(expense)) {
             setBackgroundColor(
                     elementContainer,
-                    R.color.accent_transparent);
+                    R.color.accent_variant_transparent);
         } else {
             setBackgroundColor(
                     elementContainer,
-                    R.color.accent_variant_transparent);
+                    R.color.accent_transparent);
         }
     }
 

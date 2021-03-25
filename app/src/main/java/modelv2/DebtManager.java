@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class DebtManager {
     ArrayList<Debt> debts;
@@ -134,12 +135,14 @@ public class DebtManager {
     public ArrayList<modelv2.Expense> getExpenses() {
         ArrayList<modelv2.Expense> expenses = new ArrayList<>();
         for (Debt debt : debts) {
-            expenses.add(new modelv2.Expense(
+            Expense expense = new modelv2.Expense(
                     "Pay-back",
                     (double) debt.getAmount(),
                     new Date(),
                     getUser(debt.getFrom()),
-                    new ArrayList<modelv2.User>(Arrays.asList(getUser(debt.getTo())))));
+                    new ArrayList<modelv2.User>(Arrays.asList(getUser(debt.getTo()))));
+            expense.setId(UUID.randomUUID().toString());
+            expenses.add(expense);
         }
         return expenses;
     }
