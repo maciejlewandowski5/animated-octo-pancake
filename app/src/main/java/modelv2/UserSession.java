@@ -223,7 +223,7 @@ public class UserSession {
 
     }
 
-    public void extendExpenseListeners() {
+    public void extendExpenseListeners(int scrolledPages,int totalNumberOfPages,int scrolledElements) {
         if (expensesListenerSet) {
             if (lasExpenseDocumentSpanshot != null) {
                 db = FirebaseFirestore.getInstance();
@@ -253,10 +253,6 @@ public class UserSession {
         }
     }
 
-    public void clearSession() {
-        removeGroupListener();
-        removeExpenseListeners();
-    }
 
 
     public void changeCurrentGroup(ShallowGroup shallowGroup) {

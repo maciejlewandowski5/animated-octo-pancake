@@ -1,4 +1,4 @@
-package com.maaps.expense.helpers.MainActivity;
+package com.maaps.expense.helpers.mainActivity;
 
 import android.graphics.Point;
 import android.widget.ImageView;

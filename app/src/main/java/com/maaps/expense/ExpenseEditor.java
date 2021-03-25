@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.Window;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import com.maaps.expense.helpers.ExpenseEditor.BorrowerPayerPicker;
-import com.maaps.expense.helpers.ExpenseEditor.DateTimePicker;
+import com.maaps.expense.helpers.expenseEditor.BorrowerPayerPicker;
+import com.maaps.expense.helpers.expenseEditor.DateTimePicker;
 import com.maaps.expense.helpers.Utils;
 
 import modelv2.Expense;

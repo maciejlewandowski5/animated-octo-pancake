@@ -10,7 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import com.google.firebase.auth.FirebaseAuth;
-import com.maaps.expense.helpers.InfiniteScroller;
+import com.maaps.expense.helpers.infiniteScroller.InfiniteScroller;
+import com.maaps.expense.helpers.infiniteScroller.InfiniteScrollerBuilder;
+import com.maaps.expense.helpers.infiniteScroller.ScrollerBehaviour;
+import com.maaps.expense.helpers.infiniteScroller.ElementsOutline;
+
 import java.util.ArrayList;
 import modelv2.Expense;
 import modelv2.UserSession;
@@ -39,20 +43,26 @@ public class PaymentsList extends AppCompatActivity {
     }
 
     private void initializeInfiniteScroller() {
-
         //see fragment_payment_list_element.xml
         //margin:29+image:9+margin:29
         int heightOfPaymentListElementInPx = 29+9+29;
         LinearLayout container = findViewById(R.id.container);
-        infiniteScroller = new InfiniteScroller<>(
-                container,
-                29 + 9 + 29,
-                (paymentListElementView, object, index) -> {
 
-                    initializeInfiniteScrollerOnClickLogic(paymentListElementView, (Expense) object);
+        InfiniteScrollerBuilder<Expense> builder =
+                new InfiniteScrollerBuilder<>(
+                        heightOfPaymentListElementInPx,
+                        container,
+                        PaymentListElement::newInstance);
 
-                }, (scrolledPages, totalNumberOfPages, scrolledElements) -> {
-        }, PaymentListElement::newInstance, this);
+        builder.onClickListener((paymentListElementView, object, index) -> {
+            initializeInfiniteScrollerOnClickLogic(paymentListElementView, (Expense) object);
+        });
+
+        builder.onPenultimatePageWasScrolled((scrolledPages, totalNumberOfPages, scrolledElements) -> {
+        });
+
+        infiniteScroller = builder.buildInfiniteScroller(this);
+
     }
 
     private void initializeInfiniteScrollerOnClickLogic(View paymentListElementView, Expense expense) {

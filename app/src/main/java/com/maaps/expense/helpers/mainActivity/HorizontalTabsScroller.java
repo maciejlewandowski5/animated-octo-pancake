@@ -1,4 +1,4 @@
-package com.maaps.expense.helpers.MainActivity;
+package com.maaps.expense.helpers.mainActivity;
 
 import android.app.AlertDialog;
 import android.graphics.Point;
@@ -16,12 +16,19 @@ import modelv2.UserSession;
 
 public class HorizontalTabsScroller {
 
+    final int TAB2_VISIBLE_ACKNOWLEDGMENT_PERCENT = 98;
+    final int TAB2_INVISIBLE_ACKNOWLEDGMENT_PERCENT = 2;
+    final int TAB2_PULL_START_LIMIT_PERCENT = 27;
+    final int TAB1_PULL_START_LIMIT_PERCENT = 73;
+
     private final ConstraintLayout tab1;
     private final ConstraintLayout tab2;
     private final HorizontalScrollView horizontalScrollView;
 
 
-    public HorizontalTabsScroller(ConstraintLayout tab1, ConstraintLayout tab2, HorizontalScrollView horizontalScrollView) {
+    public HorizontalTabsScroller(ConstraintLayout tab1,
+                                  ConstraintLayout tab2,
+                                  HorizontalScrollView horizontalScrollView) {
         this.tab1 = tab1;
         this.tab2 = tab2;
         this.horizontalScrollView = horizontalScrollView;
@@ -29,7 +36,6 @@ public class HorizontalTabsScroller {
 
     public void showLeaveGroupWarning(AppCompatActivity activity) {
         String buttonWarningText = makeButtonText(activity);
-        buildAlert(activity,buttonWarningText).show();
         buildAlert(activity,buttonWarningText).show();
     }
 
@@ -51,27 +57,36 @@ public class HorizontalTabsScroller {
 
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, buttonText,
                 (dialog, which) -> {
-                    if (!userSession.amILastUserInGroup()) {
-                        try {
-                            userSession.leaveCurrentGroup(activity);
-                        } catch (IllegalStateException tooFewGroupsToLeave) {
-                            Utils.toastMessage(tooFewGroupsToLeave.getMessage(),activity);
-                        }
-                    } else {
-                        userSession.leaveAndDeleteCurrentGroup(activity);
-                    }
+                    leaveButtonOnClickLogic(activity, userSession);
                 });
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, activity.getString(R.string.cancel),
                 (dialog, which) -> {
                     //closes dialog
                 });
+
         return  alertDialog;
+    }
+
+    private void leaveButtonOnClickLogic(AppCompatActivity activity, UserSession userSession) {
+        if (!userSession.amILastUserInGroup()) {
+            tryLeaveCurrentGroup(activity, userSession);
+        } else {
+            userSession.leaveAndDeleteCurrentGroup(activity);
+        }
+    }
+
+    private void tryLeaveCurrentGroup(AppCompatActivity activity, UserSession userSession) {
+        try {
+            userSession.leaveCurrentGroup(activity);
+        } catch (IllegalStateException tooFewGroupsToLeave) {
+            Utils.toastMessage(tooFewGroupsToLeave.getMessage(),activity);
+        }
     }
 
     public void initialize(AppCompatActivity app, ImageView[] pageIndicators) {
         int tab2Width = initializeLayoutWidth(app);
-        initializeLogic(tab2Width,pageIndicators);
+        initializeScrollLogic(tab2Width,pageIndicators);
     }
 
     private int initializeLayoutWidth(AppCompatActivity app){
@@ -90,35 +105,42 @@ public class HorizontalTabsScroller {
         return tab2Width;
     }
 
-    private void initializeLogic(int tab2Width, ImageView[] pageIndicators) {
+    private void initializeScrollLogic(int tab2Width, ImageView[] pageIndicators) {
 
         final boolean[] tab2IsVisible = {false};
 
-        final int TAB2_VISIBLE_ACKNOWLEDGMENT_PERCENT = 98;
-        final int TAB2_INVISIBLE_ACKNOWLEDGMENT_PERCENT = 2;
-        final int TAB2_PULL_START_LIMIT_PERCENT = 27;
-        final int TAB1_PULL_START_LIMIT_PERCENT = 73;
+
         horizontalScrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
 
             float scrolledPercent = horizontalScrollView.getScrollX() / (float) (tab2Width) * 100;
+
             if (!tab2IsVisible[0]) {
-                if (scrolledPercent >= TAB2_VISIBLE_ACKNOWLEDGMENT_PERCENT) {
-                    tab2IsVisible[0] = true;
-                    setTabTwoIndicatorsVisible(pageIndicators);
-                }
-                if (scrolledPercent >= TAB2_PULL_START_LIMIT_PERCENT) {
-                    horizontalScrollView.smoothScrollTo(horizontalScrollView.getRight(), 0);
-                }
+                tab1ScrollLogic(pageIndicators, tab2IsVisible, scrolledPercent);
             } else {
-                if (scrolledPercent <= TAB2_INVISIBLE_ACKNOWLEDGMENT_PERCENT) {
-                    tab2IsVisible[0] = false;
-                    setTabOneIndicatorsVisible(pageIndicators);
-                }
-                if (scrolledPercent <= TAB1_PULL_START_LIMIT_PERCENT) {
-                    horizontalScrollView.smoothScrollTo(horizontalScrollView.getLeft(), 0);
-                }
+                tab2ScrollLogic(pageIndicators, tab2IsVisible, scrolledPercent);
             }
+
         });
+    }
+
+    private void tab2ScrollLogic(ImageView[] pageIndicators, boolean[] tab2IsVisible, float scrolledPercent) {
+        if (scrolledPercent <= TAB2_INVISIBLE_ACKNOWLEDGMENT_PERCENT) {
+            tab2IsVisible[0] = false;
+            setTabOneIndicatorsVisible(pageIndicators);
+        }
+        if (scrolledPercent <= TAB1_PULL_START_LIMIT_PERCENT) {
+            horizontalScrollView.smoothScrollTo(horizontalScrollView.getLeft(), 0);
+        }
+    }
+
+    private void tab1ScrollLogic(ImageView[] pageIndicators, boolean[] tab2IsVisible, float scrolledPercent) {
+        if (scrolledPercent >= TAB2_VISIBLE_ACKNOWLEDGMENT_PERCENT) {
+            tab2IsVisible[0] = true;
+            setTabTwoIndicatorsVisible(pageIndicators);
+        }
+        if (scrolledPercent >= TAB2_PULL_START_LIMIT_PERCENT) {
+            horizontalScrollView.smoothScrollTo(horizontalScrollView.getRight(), 0);
+        }
     }
 
     private void setTabTwoIndicatorsVisible(ImageView[] pageIndicators) {

@@ -3,7 +3,8 @@ package com.maaps.expense.helpers;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.google.firebase.auth.AuthResult;
 import com.maaps.expense.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,18 +40,21 @@ public class AccountHelper {
         this.signInSuccessful = signInSuccessful;
     }
 
-    public void signOut(String tag) {
+    public void signOut(String tag,String message) {
         firebaseAuth.signOut();
         googleSignInClient.signOut().addOnCompleteListener(task -> {
-            Log.w(tag, "Signed out of google");
-            // Intent intent = new Intent(activity.getApplicationContext(), MainActivity.class);
-            Toast.makeText(activity.getApplicationContext(), "You Signed out", Toast.LENGTH_LONG).show();
-            Utils.toastMessage("You Signed out", activity);
-            activity.finish();
-            //   activity.startActivity(intent);
-            loggedIn = false;
+            googleClientSignOnSuccess(tag, message);
         });
         UserSession.getInstance().endSession();
+    }
+
+    private void googleClientSignOnSuccess(String tag, String message) {
+        Log.w(tag, "Signed out of google");
+
+        Utils.toastMessage(message, activity);
+        activity.finish();
+
+        loggedIn = false;
     }
 
     public void configureGoogleClient() {
@@ -76,7 +80,10 @@ public class AccountHelper {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            Utils.toastMessage(activity.getString(R.string.you_logged_in) + " " + Objects.requireNonNull(task.getResult()).getEmail(), activity);
+            Utils.toastMessage(activity.getString(R.string.you_logged_in) +
+                    " " +
+                    Objects.requireNonNull(task.getResult()).getEmail(), activity);
+
             loggedIn = true;
             assert account != null;
             firebaseAuthWithGoogle(account, tag);
@@ -88,39 +95,53 @@ public class AccountHelper {
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount account, String tag) {
-
         Log.d(tag, "firebaseAuthWithGoogle: " + account.getId());
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    Log.d(tag, "signInWithCredential:success: currentUser: " + user.getEmail());
-                    if (signInSuccessful != null) {
-
-                        if (Objects.requireNonNull(Objects.requireNonNull(
-                                task.getResult()).getAdditionalUserInfo())
-                                .isNewUser()) {
-
-                            FirebaseFirestore.getInstance().collection("Users").
-                                    document(user.getUid())
-                                    .set(UserSession.CreateNewUser(user.getDisplayName(), user.getUid()))
-                                    .addOnSuccessListener(aVoid -> signInSuccessful.signInSuccessful(user));
-
-                        } else {
-                            signInSuccessful.signInSuccessful(user);
-                        }
-                    }
-                }
-
-            } else {
-                Log.w(tag, "signInWithCredential:failure ", task.getException());
-                Utils.toastMessage(activity.getString(R.string.login_failed) + task.getException(), activity);
-            }
+            signInWithCreditedOnComplete(tag, task);
         });
+    }
 
+    private void signInWithCreditedOnComplete(String tag, Task<AuthResult> task) {
+        if (task.isSuccessful()) {
+            verifyUserSignInSuccess(tag, task);
 
+        } else {
+            Log.w(tag, "signInWithCredential:failure ", task.getException());
+
+            Utils.toastMessage(activity.getString(R.string.login_failed) +
+                    task.getException(), activity);
+        }
+    }
+
+    private void verifyUserSignInSuccess(String tag, Task<AuthResult> task) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null) {
+            Log.d(tag, "signInWithCredential:success: currentUser: " + user.getEmail());
+            if (signInSuccessful != null) {
+                startSignInSuccessful(task, user);
+            }
+        }
+    }
+
+    private void startSignInSuccessful(Task<AuthResult> task, FirebaseUser user) {
+        if (isNewUser(task)) {
+
+            FirebaseFirestore.getInstance().collection("Users").
+                    document(user.getUid())
+                    .set(UserSession.CreateNewUser(user.getDisplayName(), user.getUid()))
+                    .addOnSuccessListener(aVoid -> signInSuccessful.signInSuccessful(user));
+
+        } else {
+            signInSuccessful.signInSuccessful(user);
+        }
+    }
+
+    private boolean isNewUser(Task<AuthResult> task) {
+        return Objects.requireNonNull(Objects.requireNonNull(
+                task.getResult()).getAdditionalUserInfo())
+                .isNewUser();
     }
 
 

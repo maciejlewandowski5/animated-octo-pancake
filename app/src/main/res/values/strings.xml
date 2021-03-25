@@ -61,5 +61,6 @@
     <string name="plese_scan_from">\"Please, scan QRCode from another \"</string>
     <string name="application">\"application\"</string>
     <string name="share">Share...</string>
+    <string name="you_sign_out">Signed out</string>
 
 </resources>

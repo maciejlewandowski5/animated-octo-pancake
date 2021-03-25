@@ -1,4 +1,4 @@
-package com.maaps.expense.helpers.ExpenseEditor;
+package com.maaps.expense.helpers.expenseEditor;
 
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;

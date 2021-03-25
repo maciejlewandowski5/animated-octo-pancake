@@ -18,9 +18,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.maaps.expense.helpers.AccountHelper;
-import com.maaps.expense.helpers.InfiniteScroller;
-import com.maaps.expense.helpers.MainActivity.HorizontalTabsScroller;
-import com.maaps.expense.helpers.MainActivity.RatioBar;
+import com.maaps.expense.helpers.infiniteScroller.InfiniteScroller;
+import com.maaps.expense.helpers.infiniteScroller.InfiniteScrollerBuilder;
+import com.maaps.expense.helpers.infiniteScroller.ScrollerBehaviour;
+import com.maaps.expense.helpers.infiniteScroller.ElementsOutline;
+import com.maaps.expense.helpers.mainActivity.HorizontalTabsScroller;
+import com.maaps.expense.helpers.mainActivity.RatioBar;
 import com.maaps.expense.helpers.Utils;
 
 import java.io.Serializable;
@@ -99,14 +102,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeInfiniteScroller() {
-        infiniteScroller = new InfiniteScroller<>(
-                container,
-                heightOfListElement,
-                this::infiniteScrollerOnClickListener,
-                (scrolledPages, totalNumberOfPages, scrolledElements)
-                        -> userSession.extendExpenseListeners(),
-                ListElement::newInstance,
-                this);
+        InfiniteScrollerBuilder<Expense> infiniteScrollerBuilder =
+                new InfiniteScrollerBuilder<>(
+                        heightOfListElement,
+                        container,
+                        ListElement::newInstance);
+
+        infiniteScrollerBuilder.onClickListener(this::infiniteScrollerOnClickListener);
+        infiniteScrollerBuilder.onPenultimatePageWasScrolled(this::onScrolledToEnd);
+        infiniteScroller = infiniteScrollerBuilder.buildInfiniteScroller(this);
     }
 
     private void infiniteScrollerOnClickListener(View view, Object object, Integer index) {
@@ -168,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeUserSession() {
-        MainActivity that = this;
         int numberOfExpensesToListen = calculateNumberOfExpensesToListen();
 
         userSession = UserSession.getInstance();
@@ -176,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         userSession.setOnCurrentGroupNull(this::startCreateGroupActivity);
         userSession.setOnGroupUpdated(this::initializeOnGroupUpdated);
         userSession.setOnExpensesUpdated(expenses -> infiniteScroller.populate(expenses));
-        userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.add(expenses));
+        userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.extend(expenses));
     }
 
     private int calculateNumberOfExpensesToListen() {
@@ -196,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         totalAmount.setText(Utils.formatPriceLocale(payedByUser));
 
         TopBar topBar = TopBar.newInstance(true);
-        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG));
+        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG,getString(R.string.you_sign_out)));
         topBarId = TopBar.refreshTopBar(topBarId, this, topBar);
     }
 
@@ -218,5 +221,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             horizontalTabsScroller.showLeaveGroupWarning(this);
         }
+    }
+
+    private void onScrolledToEnd(int scrolledPages, int totalNumberOfPages, int scrolledElements) {
+        userSession.extendExpenseListeners(scrolledPages, totalNumberOfPages, scrolledElements);
     }
 }

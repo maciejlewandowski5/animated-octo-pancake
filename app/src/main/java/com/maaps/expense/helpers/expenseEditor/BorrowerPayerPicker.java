@@ -1,4 +1,4 @@
-package com.maaps.expense.helpers.ExpenseEditor;
+package com.maaps.expense.helpers.expenseEditor;
 
 import android.view.MenuItem;
 import android.view.View;
@@ -24,34 +24,34 @@ public class BorrowerPayerPicker {
     private PopupMenu popupMenu;
     UserSession userSession;
     private final LinearLayout currentBorrowerContainer;
-    private final TextView addBorrower;
+    private final TextView addBorrowerButton;
     private final AppCompatActivity activity;
-    TextView payers;
+    TextView payerTextView;
 
 
     public BorrowerPayerPicker(int currentBorrowerContainer,
-                               int addBorrower,
-                               int addPayer,
+                               int addBorrowerTextViewId,
+                               int addPayerTextViewId,
                                AppCompatActivity activity) {
         userSession = UserSession.getInstance();
         borrowers = new ArrayList<>();
         group = userSession.getCurrentGroup();
         this.currentBorrowerContainer = activity.findViewById(currentBorrowerContainer);
-        this.addBorrower = activity.findViewById(addBorrower);
-        this.payers = activity.findViewById(addPayer);
+        this.addBorrowerButton = activity.findViewById(addBorrowerTextViewId);
+        this.payerTextView = activity.findViewById(addPayerTextViewId);
         this.activity = activity;
-        popupMenu = new PopupMenu(activity, this.addBorrower);
+        popupMenu = new PopupMenu(activity, this.addBorrowerButton);
     }
 
     public void initialInputFromExpense(Expense expense) {
-        payers.setText(expense.getPayer().getName());
+        payerTextView.setText(expense.getPayer().getName());
         this.payer = expense.getPayer();
         this.borrowers.addAll(expense.getBorrowers());
         refreshDisplayedBorrowers(borrowers);
     }
 
     public void initialDataFromUserSession() {
-        payers.setText(userSession.getCurrentUser().getName());
+        payerTextView.setText(userSession.getCurrentUser().getName());
         this.payer = userSession.getCurrentUser();
     }
 
@@ -115,7 +115,7 @@ public class BorrowerPayerPicker {
 
     public void addBorrowerButtonClick() {
         if (!isEveryOneABorrower()) {
-            popupMenu = new PopupMenu(activity, addBorrower);
+            popupMenu = new PopupMenu(activity, addBorrowerButton);
             popupMenu.setOnMenuItemClickListener(
                     this::borrowersPopUpMenuOnClickListener);
 
