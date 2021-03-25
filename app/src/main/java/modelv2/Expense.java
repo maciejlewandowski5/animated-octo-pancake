@@ -29,7 +29,8 @@ public class Expense implements Serializable {
         payer = new User(ds.getString("payerName"),ds.getString("payer"));
         borrowers = new ArrayList<>();
         try {
-            Set<Map.Entry<String, Object>> tmp = ((Map<String, Object>) Objects.requireNonNull(ds.get("borrowers"))).entrySet();
+            Set<Map.Entry<String, Object>> tmp = ((Map<String, Object>)
+                    Objects.requireNonNull(ds.get("borrowers"))).entrySet();
             for(Map.Entry<String,Object> borrower : tmp){
                 borrowers.add(new User((String) borrower.getValue(),borrower.getKey()));
             }
@@ -73,9 +74,9 @@ public class Expense implements Serializable {
         result.put("payer",payer.getId());
         result.put("payerName",payer.getName());
         Map<String,Object> nested = new HashMap<>();
-        borrowers.forEach((user) -> {
-            nested.put(user.getId(),user.getName());
-        });
+        for (User user : borrowers) {
+            nested.put(user.getId(), user.getName());
+        }
         result.put("borrowers",nested);
         return result;
     }

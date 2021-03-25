@@ -23,11 +23,12 @@
 
         <ImageView
             android:id="@+id/imageView9"
-            app:layout_constraintStart_toStartOf="@+id/title"
-            app:layout_constraintTop_toTopOf="parent"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/icon" />
+            android:contentDescription="@string/expense_logo"
+            android:src="@drawable/icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

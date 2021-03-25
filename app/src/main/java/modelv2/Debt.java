@@ -23,7 +23,6 @@ public class Debt {
             } else {
                 throw new InstantiationException("debt1 to different then debt2 to, use merge method");
             }
-           // System.out.println("Case 1:  debt1: " + debt1.toString() +"debt2: " + debt2.toString()  );
         } else if (debt1.from.equals(debt2.to)) {
             if (debt1.to.equals(debt2.from)) { // debts are with opposite from and
                 if (debt1.amount > debt2.amount) {
@@ -38,7 +37,6 @@ public class Debt {
             } else {
                 throw new InstantiationException("debt1 to different then debt 2 from, use merge method");
             }
-          //  System.out.println("Case 2:  debt1: " + debt1.toString() +"debt2: " + debt2.toString()  );
         } else if (debt1.to.equals(debt2.from)) {
             throw new InstantiationException("debt1 from different then debt2 to, use merge method");
         } else {

@@ -68,7 +68,8 @@ android:layout_marginTop="12dp"
         android:layout_marginTop="12dp"
         app:layout_constraintEnd_toEndOf="@+id/textView11"
         app:layout_constraintTop_toBottomOf="@+id/textView11"
-        app:srcCompat="@android:drawable/ic_menu_share" />
+        app:srcCompat="@android:drawable/ic_menu_share"
+        android:contentDescription="@string/share_icon" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -80,5 +81,6 @@ android:layout_marginTop="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView10"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/background_accent_variant" />
+        app:srcCompat="@drawable/background_accent_variant"
+        android:contentDescription="@string/qr_code" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,86 +30,21 @@ public class DebtManager {
             borrowers = ((Map<String, Object>) ds.getData().get(payer.getKey()));
             for (Map.Entry<String, Object> borrower : borrowers.entrySet()) {
                 try {
-                    debts.add(new Debt(payer.getKey(), borrower.getKey(), ((Double) borrower.getValue()).floatValue()));
+                    debts.add(new Debt(
+                            payer.getKey(),
+                            borrower.getKey(),
+                            ((Double) borrower.getValue()).floatValue()));
                 } catch (ClassCastException e) {
-                    debts.add(new Debt(payer.getKey(), borrower.getKey(), ((Long) borrower.getValue()).floatValue()));
+                    debts.add(new Debt(payer.getKey(),
+                            borrower.getKey(),
+                            ((Long) borrower.getValue()).floatValue()));
                 }
             }
         }
     }
 
     public void reduceDebts() {
-        ArrayList<Integer> firstOfPair = new ArrayList<Integer>();
-        ArrayList<Integer> secondOfPair = new ArrayList<Integer>();
-        ArrayList<Debt> freshDebts = new ArrayList<>();
 
-        //TODO::
-        int i = 0;
-        for (Debt debt1 : debts) {
-            int j = 0;
-            for (Debt debt2 : debts) {
-                if (debt1.from.equals(debt2.to)) {
-                    if (!firstOfPair.contains(i) && !secondOfPair.contains(j)) {
-                        firstOfPair.add(i);
-                        secondOfPair.add(j);
-                    }
-                }
-                j++;
-            }
-            i++;
-        }
-        System.out.println("SIZE  " + firstOfPair.size() + "   " + secondOfPair.size() + "  " + debts.size());
-        for (Integer k : firstOfPair) {
-            try {
-                freshDebts.addAll(Debt.mergeDebts(debts.get(secondOfPair.get(firstOfPair.indexOf(k))), debts.get(k)));
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-        for (Integer k = 0; k < debts.size(); k++) {
-            if (!firstOfPair.contains(k) && !secondOfPair.contains(k)) {
-                freshDebts.add(debts.get(k));
-            }
-        }
-        {
-        debts = freshDebts;
-        firstOfPair = new ArrayList<Integer>();
-        secondOfPair = new ArrayList<Integer>();
-        freshDebts = new ArrayList<>();
-        i = 0;
-        for (Debt debt1 : debts) {
-            int j = 0;
-            for (Debt debt2 : debts) {
-                if(debt1.to.equals(debt2.to)&& debt2.from.equals(debt1.from)){
-                    if(!firstOfPair.contains(i) && !secondOfPair.contains(j)) {
-                        firstOfPair.add(debts.indexOf(debt1));
-                        secondOfPair.add(debts.indexOf(debt2));
-                    }
-                }
-            }
-        }
-        for(int d =0;d<debts.size();i++){
-            try {
-                freshDebts.add(new Debt(debts.get(firstOfPair.get(i)),debts.get(secondOfPair.get(i))));
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-        }
-        for (Integer k = 0; k < debts.size(); k++) {
-            if (!firstOfPair.contains(k) && !secondOfPair.contains(k)) {
-                freshDebts.add(debts.get(k));
-            }
-        }
-        debts = freshDebts;
-        freshDebts = new ArrayList<>();
-
-        for (Debt debt : debts) {
-            if (!debt.from.equals(debt.to) && debt.amount != 0) {
-                freshDebts.add(debt);
-            }
-        }
-        debts = freshDebts;
     }
 
     public void simplifyDebts() {
@@ -134,7 +69,9 @@ public class DebtManager {
         }
         for (Integer k : firstOfPair) {
             try {
-                freshDebts.add(new Debt(debts.get(k), debts.get(secondOfPair.get(firstOfPair.indexOf(k)))));
+                freshDebts.add(new Debt(
+                        debts.get(k),
+                        debts.get(secondOfPair.get(firstOfPair.indexOf(k)))));
             } catch (InstantiationException e) {
                 e.printStackTrace();
             }
@@ -197,7 +134,12 @@ public class DebtManager {
     public ArrayList<modelv2.Expense> getExpenses() {
         ArrayList<modelv2.Expense> expenses = new ArrayList<>();
         for (Debt debt : debts) {
-            expenses.add(new modelv2.Expense( "Pay-back", (double) debt.getAmount(),new Date(), getUser(debt.getFrom()), new ArrayList<modelv2.User>(Arrays.asList(getUser(debt.getTo())))));
+            expenses.add(new modelv2.Expense(
+                    "Pay-back",
+                    (double) debt.getAmount(),
+                    new Date(),
+                    getUser(debt.getFrom()),
+                    new ArrayList<modelv2.User>(Arrays.asList(getUser(debt.getTo())))));
         }
         return expenses;
     }

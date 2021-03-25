@@ -62,5 +62,21 @@
     <string name="application">\"application\"</string>
     <string name="share">Share...</string>
     <string name="you_sign_out">Signed out</string>
+    <string name="share_icon">share icon</string>
+    <string name="add_button">Add button</string>
+    <string name="_42_42">42.42</string>
+    <string name="plus_sign">plus sign</string>
+    <string name="with_qr_code">with QR code</string>
+    <string name="active_page_indicator">active page indicator</string>
+    <string name="inactive_page_indicator">inactive page indicator</string>
+    <string name="payed_amount_ratio_bar_indicator">payed amount ratio bar indicator</string>
+    <string name="qr_code">QR Code</string>
+    <string name="textview">TextView</string>
+    <string name="border_line">border line</string>
+    <string name="payment_indicator">payment indicator</string>
+    <string name="checkbox">checkbox</string>
+    <string name="textview">TextView</string>
+    <string name="expense_logo">Expense logo</string>
+    <string name="menu_icon">menu icon</string>
 
 </resources>

@@ -61,7 +61,8 @@
             app:layout_constraintBottom_toBottomOf="@+id/title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/menu_icon" />
+            app:srcCompat="@drawable/menu_icon"
+            android:contentDescription="@string/menu_icon" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

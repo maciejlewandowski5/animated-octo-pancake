@@ -90,6 +90,7 @@
                 <EditText
                     android:id="@+id/editTextNumber"
                     style="@style/on_bright"
+                    android:hint="@string/_42_42"
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -133,10 +134,9 @@
             </LinearLayout>
             <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:minHeight="37dp"
+                android:layout_height="0dp"
+                android:minHeight="50dp"
                 android:layout_weight="1">
-
                 <LinearLayout
                     android:id="@+id/container"
                     android:layout_width="wrap_content"
@@ -213,6 +213,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/add_button"
-        />
+        android:contentDescription="@string/plus_sign"
+        android:focusable="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -35,8 +35,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="3">
-
+            android:weightSum="3"
+            android:baselineAligned="false">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout"
@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="14dp"
-                    android:text=" "
+                    android:text=""
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -103,14 +103,16 @@
                         android:layout_height="8dp"
                         android:layout_weight="1"
                         android:layout_marginEnd="5dp"
-                        app:srcCompat="@drawable/circle_grey" />
+                        app:srcCompat="@drawable/circle_grey"
+                        android:contentDescription="@string/active_page_indicator" />
 
                     <ImageView
                         android:id="@+id/imageView6"
                         android:layout_width="8dp"
                         android:layout_height="8dp"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/circle_dark_grey" />
+                        app:srcCompat="@drawable/circle_dark_grey"
+                        android:contentDescription="@string/inactive_page_indicator" />
 
                 </LinearLayout>
 
@@ -132,7 +134,8 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/background_teal" />
+                        app:srcCompat="@drawable/background_teal"
+                        android:contentDescription="@string/payed_amount_ratio_bar_indicator" />
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -181,7 +184,8 @@
                         android:layout_height="8dp"
                         android:layout_marginEnd="5dp"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/circle_dark_grey" />
+                        app:srcCompat="@drawable/circle_dark_grey"
+                        android:contentDescription="@string/inactive_page_indicator" />
 
 
                     <ImageView
@@ -189,7 +193,8 @@
                         android:layout_width="8dp"
                         android:layout_height="8dp"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/circle_grey" />
+                        app:srcCompat="@drawable/circle_grey"
+                        android:contentDescription="@string/active_page_indicator" />
 
 
                 </LinearLayout>
@@ -252,7 +257,6 @@
                     style="@style/medium_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:onClick="startHistory"
                     android:text=""
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -271,12 +275,13 @@
             android:layout_marginEnd="40dp"
             android:layout_marginBottom="40dp"
             android:clickable="true"
-
             android:onClick="startAddExpenseActivity"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:srcCompat="@drawable/add_button"
-            android:transitionName="fbut"/>
+            android:transitionName="fbut"
+            android:contentDescription="@string/plus_sign"
+            android:focusable="true" />
 
 
 

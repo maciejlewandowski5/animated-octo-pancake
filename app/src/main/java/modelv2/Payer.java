@@ -49,9 +49,9 @@ public class Payer extends User implements Serializable {
 
     Map<String, Object> toMap() {
         Map<String, Object> result = new HashMap<>();
-        borrowers.forEach(borrower -> {
+        for (User borrower : borrowers) {
             result.put(borrower.getId(), amounts.get(borrowers.indexOf(borrower)));
-        });
+        }
         return result;
     }
 

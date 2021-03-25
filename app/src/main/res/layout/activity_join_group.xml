@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="15dp"
-        android:text="with QR code"
+        android:text="@string/with_qr_code"
         android:background="@drawable/background_button_simple"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -100,6 +100,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/add_button"
-        android:transitionName="fbut"/>
+        android:transitionName="fbut"
+        android:focusable="true"
+        android:contentDescription="@string/plus_sign" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

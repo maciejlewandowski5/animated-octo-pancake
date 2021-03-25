@@ -28,29 +28,35 @@ public class Group implements Serializable {
         expenses = new ArrayList<>();
 
         try {
-            Set<Map.Entry<String, Object>> usersEntrySet = ((Map<String, Object>) value.getData().get("users")).entrySet();
+            Set<Map.Entry<String, Object>> usersEntrySet =
+                    ((Map<String, Object>) value.getData().get("users")).entrySet();
 
 
-            usersEntrySet.forEach((entry) -> {
+            for (Map.Entry<String, Object> entry : usersEntrySet) {
                 User user = new User((String) entry.getValue(), entry.getKey());
                 users.add(user);
                 payers.add(new Payer(user));
-            });
+            }
 
-            payers.forEach((payer) -> {
-                ((Map<String, Object>) value.getData().get(payer.getId())).entrySet().forEach((borrower) -> {
+            for (Payer payer : payers) {
+                for (Map.Entry<String, Object> borrower :
+                        ((Map<String, Object>) value.getData().get(payer.getId())).entrySet()) {
                     User tmp = new User(borrower.getKey(), borrower.getKey());
                     try {
                         try {
-                            payer.addBorrower(users.get(users.indexOf(tmp)), (Double) borrower.getValue());
+                            payer.addBorrower(
+                                    users.get(users.indexOf(tmp)),
+                                    (Double) borrower.getValue());
                         } catch (ClassCastException e) {
-                            payer.addBorrower(users.get(users.indexOf(tmp)), ((Long) borrower.getValue()).doubleValue());
+                            payer.addBorrower(
+                                    users.get(users.indexOf(tmp)),
+                                    ((Long) borrower.getValue()).doubleValue());
                         }
-                    } catch (ArrayIndexOutOfBoundsException payerLeftGroup){
+                    } catch (ArrayIndexOutOfBoundsException payerLeftGroup) {
 
                     }
-                });
-            });
+                }
+            }
 
         } catch (ClassCastException e) {
             throw e;
@@ -81,7 +87,9 @@ public class Group implements Serializable {
                 int index = payers.indexOf(tmp.getPayer());
                 if (index > -1) {
                     for (User borrower : tmp.getBorrowers()) {
-                        payers.get(index).removeBorrowedAmount(borrower, tmp.getAmount() / (double) tmp.getBorrowers().size());
+                        payers.get(index).removeBorrowedAmount(
+                                borrower,
+                                tmp.getAmount() / (double) tmp.getBorrowers().size());
                     }
                 } else {
                     throw new IllegalArgumentException("No such payer in group");
@@ -93,10 +101,14 @@ public class Group implements Serializable {
         int index = payers.indexOf(expense.getPayer());
         if (index > -1) {
             for (User borrower : expense.getBorrowers()) {
-                payers.get(index).addBorrower(borrower, expense.getAmount() / (double) expense.getBorrowers().size());
+                payers.get(index).addBorrower(
+                        borrower,
+                        expense.getAmount() / (double) expense.getBorrowers().size());
             }
         } else {
-            throw new IllegalArgumentException("No such payer in group " + expense.getPayer().getName());
+            throw new IllegalArgumentException(
+                    "No such payer in group " +
+                            expense.getPayer().getName());
         }
 
     }
@@ -162,25 +174,25 @@ public class Group implements Serializable {
         result.put("code", code);
         result.put("name", name);
         Map<String, Object> nested = new HashMap<>();
-        users.forEach(user -> {
+        for (User user : users) {
             nested.put(user.getId(), user.getName());
-        });
+        }
         result.put("users", nested);
-        payers.forEach(payer -> {
+        for (Payer payer : payers) {
             result.put(payer.getId(), payer.toMap());
-        });
+        }
         return result;
     }
 
     public void addUser(User user) {
         users.add(user);
         Payer payer = new Payer(user);
-        users.forEach(borrower ->{
-            payer.addBorrower(borrower,0d);
-        });
-        payers.forEach(payer1 ->{
-            payer1.addBorrower(user,0d);
-        });
+        for (User borrower : users) {
+            payer.addBorrower(borrower, 0d);
+        }
+        for (Payer payer1 : payers) {
+            payer1.addBorrower(user, 0d);
+        }
         payers.add(payer);
     }
 
@@ -192,17 +204,16 @@ public class Group implements Serializable {
 
     public void removeUser(User currentUser) {
         users.remove(currentUser);
-        payers.forEach(payer -> {
+        for (Payer payer : payers) {
             payer.removeBorrower(currentUser);
-        });
-        payers.removeIf(new Predicate<Payer>() {
-            @Override
-            public boolean test(Payer payer) {
-                if(payer.getId().equals(currentUser.getId())){
-                    return true;
-                }
-                return false;
+        }
+
+        ArrayList<Payer> newPayers = new ArrayList<>();
+        for (Payer payer : payers) {
+            if(!payer.getId().equals(currentUser.getId())){
+                newPayers.add(payer);
             }
-        });
+        }
+        payers = newPayers;
     }
 }

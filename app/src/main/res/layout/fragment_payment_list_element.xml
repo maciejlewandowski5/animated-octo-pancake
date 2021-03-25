@@ -39,7 +39,8 @@
             android:text="@string/user"
             app:layout_constraintBottom_toBottomOf="@+id/to"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/user_name" />
+            app:layout_constraintTop_toTopOf="@+id/user_name"
+            android:contentDescription="@string/payment_indicator" />
 
         <CheckBox
             android:id="@+id/checkbox"
@@ -50,7 +51,8 @@
             android:clickable="true"
             app:layout_constraintBottom_toBottomOf="@+id/to"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/user_name" />
+            app:layout_constraintTop_toTopOf="@+id/user_name"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/amount"
@@ -71,7 +73,8 @@
             android:src="@drawable/background_button_simple"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/to" />
+            app:layout_constraintTop_toBottomOf="@+id/to"
+            android:contentDescription="@string/checkbox" />
 
         <TextView
             android:id="@+id/textView12"
@@ -89,7 +92,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="12dp"
-            android:text="TextView"
+            android:text="@string/textview"
             android:lines="1"
             android:scrollHorizontally="true"
             android:ellipsize="end"

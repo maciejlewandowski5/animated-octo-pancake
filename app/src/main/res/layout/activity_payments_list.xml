@@ -57,5 +57,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/add_button"
-        android:transitionName="fbut"/>
+        android:transitionName="fbut"
+        android:contentDescription="@string/plus_sign"
+        android:focusable="true" />
 </androidx.constraintlayout.widget.ConstraintLayout>
