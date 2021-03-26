@@ -4,6 +4,11 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 
 # Expense
 ## Project log and milestones
+
+🟢 - done, no major flaws
+🔴 - temporary solution
+
+
 | No. | Title | Due date | Status | Description |
 | :--- | :--- | :---: | :---: | :--- |
 | 1. | Layout design | 2021-02-19 | :green_circle: | [Layout in figma](https://www.figma.com/file/poj3KbWGYV5MOSEB41TOdi/Expense), [Prototype](https://www.figma.com/proto/poj3KbWGYV5MOSEB41TOdi/Expense?scaling=scale-down&page-id=0%3A1&node-id=1%3A2)|
@@ -13,7 +18,7 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 | 5. | Merging model and layout | 2021-02-25 | 🟢 | |
 | 6. | Setting up firebase env | 2021-02-26 | 🟢 | Architecture of model in future should be adjusted to work smoothly with fb | |
 | 7. | Alfa version 0.01 | 2021-03-01 | 🟢 | |
-| 8. | Redesigning model | 2021-03-05 | 🟢 | |
+| 8. | Redesigning model | 2021-03-05 | 🟢 | see 6. |
 | 9. | Cleaning-up and joining with new model | 2021-03-09 | 🟢 | |
 | 10. | Log-Out feature | 2021-03-10 | 🟢 | |
 | 11. | Animations | 2021-03-12 |  🔴 | Skipping frames!, re-do it later |
@@ -25,4 +30,5 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 | 17. | Creating tests | 2021-04-05 |  | |
 | 18. | Re-designing payments confirmation layout | | |
 | 19. | Re-designing leave group lay-out | | | 
+
 	
