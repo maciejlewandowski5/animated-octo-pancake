@@ -1,6 +1,10 @@
+
+<img src="https://user-images.githubusercontent.com/64683954/112608591-caf0ba80-8e1a-11eb-983a-bda998f0632f.png" width="50" height="50"> 
+
 # Git Hub for Expense android app
 Expense is free android app.
 Main purpose of Expense is to simplify gorups budgets managment. Execelent sollution for travelling together and easyly keepeng track of all spendings. Expense allow for fast splitting bills, etc..
+
 
 # Expense
 ## Project log and milestones
