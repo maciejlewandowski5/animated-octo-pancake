@@ -7,6 +7,8 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 
 
 # Expense
+## Google Play Store
+ - [Open test/Beta test](https://play.google.com/store/apps/details?id=com.maaps.expense)
 ## Project log and milestones
 
 🟢 - done, no major flaws
