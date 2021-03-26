@@ -4,8 +4,8 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 
 # Expense
 ## Project log and milestones
-| No. | Title | Date | Done | Description |
+| No. | Title | Date | Status | Description |
 | :--- | :--- | :---: | :---: | :--- |
-| 1. | Layout design | 2021-02-19 | [x] | [Layout in figma](https://www.figma.com/file/poj3KbWGYV5MOSEB41TOdi/Expense), [Prototype](https://www.figma.com/proto/poj3KbWGYV5MOSEB41TOdi/Expense?scaling=scale-down&page-id=0%3A1&node-id=1%3A2)|
+| 1. | Layout design | 2021-02-19 | :green_circle: | [Layout in figma](https://www.figma.com/file/poj3KbWGYV5MOSEB41TOdi/Expense), [Prototype](https://www.figma.com/proto/poj3KbWGYV5MOSEB41TOdi/Expense?scaling=scale-down&page-id=0%3A1&node-id=1%3A2)|
 2. 
-	:green_circle:
+	
