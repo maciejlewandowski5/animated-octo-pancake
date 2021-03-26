@@ -90,9 +90,7 @@ public class HorizontalTabsScroller {
     }
 
     private int initializeLayoutWidth(AppCompatActivity app){
-        Point screenSizes = new Point();
-        app.getWindowManager().getDefaultDisplay().getSize(screenSizes);
-        int screenWidth = screenSizes.x;
+        int screenWidth = Utils.getScreenWidthPx(app);
         int tab2Width = screenWidth / 3;
 
         ViewGroup.LayoutParams layoutParams = tab1.getLayoutParams();

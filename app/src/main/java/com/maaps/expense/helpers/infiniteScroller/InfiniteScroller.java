@@ -58,8 +58,8 @@ public class InfiniteScroller<T extends Serializable> {
         int scrolledElements = rootScrollView.getScrollY() / (int) Utils.dpToPx(elementHeightDp, app);
         float viewsPerPage = (float) rootScrollView.getHeight() / Utils.dpToPx(elementHeightDp, app);
         int scrolledPages = scrolledElements / (int) viewsPerPage;
-        int totalNumberOfPages = (int) container.getChildCount() / (int) viewsPerPage;
-
+        int totalNumberOfPages = (int) ((int) container.getChildCount() / Math.ceil( viewsPerPage));
+        System.out.println(container.getChildCount());
         if (scrolledPages == totalNumberOfPages - 1) {
             if (!latestPaginationWasRead[0]) {
                 scrollerBehaviour.getOnPenultimatePageWasScrolled().
@@ -81,9 +81,11 @@ public class InfiniteScroller<T extends Serializable> {
     protected void populateWithItems(ArrayList<T> items) {
         int i = 0;
         for (T item : items) {
-            ConstraintLayout constraintLayout = prepareInnerContainer();
-            createAndAddButton(i, item, constraintLayout);
-            i = transactFragment(i, item, constraintLayout);
+
+                ConstraintLayout constraintLayout = prepareInnerContainer();
+                createAndAddButton(i, item, constraintLayout);
+                i = transactFragment(i, item, constraintLayout);
+
         }
     }
 

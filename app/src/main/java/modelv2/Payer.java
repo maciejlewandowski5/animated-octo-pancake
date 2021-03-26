@@ -40,8 +40,8 @@ public class Payer extends User implements Serializable {
     }
 
     public void removeBorrowedAmount(User user, double amount) {
-        if (borrowers.contains(user.getId())) {
-            int index = borrowers.indexOf(user.getId());
+        if (borrowers.contains(user)) {
+            int index = borrowers.indexOf(user);
             double prv = amounts.get(index);
             amounts.set(index, prv - amount);
         }

@@ -1,6 +1,7 @@
 package com.maaps.expense;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -116,7 +117,7 @@ public class ExpenseEditor extends AppCompatActivity {
         amount.setFilters(Utils.priceFormatFilter());
         seekBar = findViewById(R.id.seekBar);
 
-        TopBar topBar = TopBar.newInstance(true);
+        TopBar topBar = TopBar.newInstance(false);
         TopBar.refreshTopBar(R.id.fragment, this, topBar);
     }
 
@@ -138,6 +139,11 @@ public class ExpenseEditor extends AppCompatActivity {
                     dateTimePicker.getDateTime(),
                     borrowerPayerPicker.getPayer(),
                     borrowerPayerPicker.getBorrowers());
+
+            Intent data = new Intent();
+            data.setData(Uri.parse(""));
+            setResult(RESULT_OK, data);
+
         } else {
             Expense expense1 = prepareExpense(expenseName, price);
             tryEditingExpense(expense1);
@@ -157,6 +163,10 @@ public class ExpenseEditor extends AppCompatActivity {
     private void tryEditingExpense(Expense expense1) {
         try {
             userSession.editExpense(expense1);
+            Intent data = new Intent();
+            data.setData(Uri.parse("expense_edited"));
+            setResult(RESULT_OK, data);
+
         } catch (IllegalArgumentException userNotInGroup) {
             Utils.toastMessageLong(getString(R.string.user_left_group_you_can_not_edit), this);
         }

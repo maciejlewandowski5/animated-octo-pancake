@@ -20,8 +20,6 @@ import android.widget.TextView;
 import com.maaps.expense.helpers.AccountHelper;
 import com.maaps.expense.helpers.infiniteScroller.InfiniteScroller;
 import com.maaps.expense.helpers.infiniteScroller.InfiniteScrollerBuilder;
-import com.maaps.expense.helpers.infiniteScroller.ScrollerBehaviour;
-import com.maaps.expense.helpers.infiniteScroller.ElementsOutline;
 import com.maaps.expense.helpers.mainActivity.HorizontalTabsScroller;
 import com.maaps.expense.helpers.mainActivity.RatioBar;
 import com.maaps.expense.helpers.Utils;
@@ -35,9 +33,10 @@ import modelv2.UserSession;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Expense.MainActivity";
     private static final String EXPENSE_ARG_FOR_EXPENSE_EDITOR = "EXPENSE";
+    private static  final  int EDIT_EXPENSE_RESULT = 1212;
 
     private int topBarId;
-    private int heightOfListElement;
+    private int heightOfListElementDp;
 
     private ConstraintLayout history;
     private TextView totalAmount;
@@ -61,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
 
         //heightOfListElement should be size of fragment_list_element.xml
         //margin:11+text:11+margin:2+:smallText:9+image:18+:text12:margin:18
-        heightOfListElement = 11 + 11 + 2 + 9 + 18 + 12 + 18;
+        heightOfListElementDp = 11 + 11 + 2 + 9 + 18 + 12 + 18;
+
+
 
         initializeInfiniteScroller();
         accountHelper = new AccountHelper(this);
@@ -73,8 +74,18 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == accountHelper.getRCSGININCode()) {
             accountHelper.verifySignInResults(TAG, data);
+        }else if (requestCode == EDIT_EXPENSE_RESULT) {
+            if (resultCode == RESULT_OK) {
+                if (data.getData() != null) {
+                    if(data.getData().toString().equals("expense_edited")){
+
+                    }
+                }
+            }
         }
     }
+
+
 
     @Override
     protected void onStart() {
@@ -101,10 +112,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
+
     private void initializeInfiniteScroller() {
         InfiniteScrollerBuilder<Expense> infiniteScrollerBuilder =
                 new InfiniteScrollerBuilder<>(
-                        heightOfListElement,
+                        heightOfListElementDp,
                         container,
                         ListElement::newInstance);
 
@@ -118,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this
                 , new Pair<>(history, getString(R.string.animation_tag__history_title)));
         intent.putExtra(EXPENSE_ARG_FOR_EXPENSE_EDITOR, (Serializable) object);
-        startActivity(intent, options.toBundle());
+        startActivityForResult(intent, EDIT_EXPENSE_RESULT ,options.toBundle());
     }
 
     private void prepareViews() {
@@ -182,9 +196,35 @@ public class MainActivity extends AppCompatActivity {
         userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.extend(expenses));
     }
 
+    private int calculateScrollerHeight(){
+        //TODO:: fix this monster!
+        //Top bar
+        //24dp+16dp paddings of top bar
+        //30dp title bar height, margin for fragment title bar 4
+        //36sp + 4dp matgin group name title
+        //13sp small text
+        // - - -
+
+        //16sp medium text + 14dp margin top
+        //72sp huge text +7 dp margin top
+        //36dp button height+15dp margin top
+        //8dp page indicator margin end 5dp
+        //bar: margintop 22dp +bar 8dp
+        // - - -
+
+        //margin top 26dp + medium text 16sp
+        // margin top 11 dp
+        //margin bottom 5dp
+
+        return  (int) (Math.round(Utils.getScreenHeightPx(this)) -
+                (Utils.dpToPx(24+16+30+4+14+7+36+15+8+5+22+8+26+16+11+5,this) +
+                        Utils.spToPx(36+13+16+72+16,this)));
+    }
+
     private int calculateNumberOfExpensesToListen() {
-        return (((ScrollView) container.getParent()).getHeight()
-                / Utils.dpToPx(heightOfListElement, this) + 1) * 2; // for two pages, avoid zero
+        return (int) (calculateScrollerHeight()/
+                (float)Utils.dpToPx(heightOfListElementDp,this)) * 2;// for two pages, avoid zero
+
     }
 
     private void startCreateGroupActivity() {

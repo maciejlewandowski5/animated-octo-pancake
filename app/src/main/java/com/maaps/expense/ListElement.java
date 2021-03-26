@@ -24,6 +24,9 @@ public class ListElement extends Fragment {
         // Required empty public constructor
     }
 
+    public static ListElement newInstance() {
+        return new ListElement();
+    }
 
     public static ListElement newInstance(Serializable... expense) {
         ListElement fragment = new ListElement();

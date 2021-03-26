@@ -78,6 +78,16 @@ public class Group implements Serializable {
     public void addExpenseQuietly(Expense expense) {
         expenses.add(expense);
     }
+    public boolean updateExpenseQuietly(Expense expense) {
+        if(expenses.contains(expense)) {
+            int index =expenses.indexOf(expense);
+            expenses.set(index,expense);
+            return true;
+        }else{
+            addExpenseQuietly(expense);
+            return false;
+        }
+    }
 
     //also can edit expenses
     public void addExpense(Expense expense) {

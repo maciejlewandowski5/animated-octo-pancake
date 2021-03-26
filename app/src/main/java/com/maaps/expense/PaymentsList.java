@@ -36,7 +36,7 @@ public class PaymentsList extends AppCompatActivity {
     }
 
     private void initializeViewsAndNonViewsParameters() {
-        TopBar topBar = TopBar.newInstance(true);
+        TopBar topBar = TopBar.newInstance(false);
         TopBar.refreshTopBar(R.id.fragment, this, topBar);
         allDebts = new ArrayList<>();
         debtsToPay = new ArrayList<>();

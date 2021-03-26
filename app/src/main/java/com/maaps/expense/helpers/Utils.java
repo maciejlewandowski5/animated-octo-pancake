@@ -3,10 +3,13 @@ package com.maaps.expense.helpers;
 
 import android.content.Context;
 
+import android.graphics.Point;
 import android.text.InputFilter;
 import android.util.TypedValue;
 
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.maaps.expense.R;
 
@@ -15,6 +18,8 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -30,6 +35,18 @@ public class Utils {
 
     public static int spToPx(float sp, Context context) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
+    }
+
+    public static int getScreenWidthPx(AppCompatActivity activity){
+        return getScreenPointSize(activity).x;
+    }
+    private static Point getScreenPointSize(AppCompatActivity activity){
+        Point screenSizes = new Point();
+        activity.getWindowManager().getDefaultDisplay().getSize(screenSizes);
+        return  screenSizes;
+    }
+    public static int getScreenHeightPx(AppCompatActivity activity){
+        return getScreenPointSize(activity).y;
     }
 
     public static Date getFirstDayOfTheMonth(Date date) {

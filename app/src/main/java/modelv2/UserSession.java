@@ -262,7 +262,10 @@ public class UserSession {
                                         ArrayList<Expense> newExpenses = new ArrayList<>();
                                         for (DocumentSnapshot ds : value.getDocuments()) {
                                             Expense expense = new Expense(ds);
+
                                             currentGroup.addExpenseQuietly(expense);
+                                            //update expense quietly
+                                            //currentGroup.updateExpenseQuietly(expense);
                                             newExpenses.add(expense);
                                             lasExpenseDocumentSpanshot = ds;
                                         }
