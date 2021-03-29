@@ -17,6 +17,10 @@ import com.maaps.expense.helpers.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import modelv2.Expense;
 
 public class InfiniteScroller<T extends Serializable> {
 
@@ -24,7 +28,9 @@ public class InfiniteScroller<T extends Serializable> {
     ScrollerBehaviour scrollerBehaviour;
 
     AppCompatActivity app;
+    Map<T, View> itemsVies;
     ArrayList<T> items;
+    ArrayList<View> views;
     Integer loadedNumberOfItems;
     Integer maxScrolledItemIndex;
     final boolean[] latestPaginationWasRead = {false};
@@ -36,7 +42,9 @@ public class InfiniteScroller<T extends Serializable> {
         this.elementsOutline = elementsOutline;
 
         this.app = app;
+        itemsVies = new HashMap<>();
         items = new ArrayList<>();
+        views = new ArrayList<>();
         loadedNumberOfItems = 0;
         maxScrolledItemIndex = 0;
         this.scrollerBehaviour = scrollerBehaviour;
@@ -58,8 +66,7 @@ public class InfiniteScroller<T extends Serializable> {
         int scrolledElements = rootScrollView.getScrollY() / (int) Utils.dpToPx(elementHeightDp, app);
         float viewsPerPage = (float) rootScrollView.getHeight() / Utils.dpToPx(elementHeightDp, app);
         int scrolledPages = scrolledElements / (int) viewsPerPage;
-        int totalNumberOfPages = (int) ((int) container.getChildCount() / Math.ceil( viewsPerPage));
-        System.out.println(container.getChildCount());
+        int totalNumberOfPages = (int) ((int) container.getChildCount() / Math.ceil(viewsPerPage));
         if (scrolledPages == totalNumberOfPages - 1) {
             if (!latestPaginationWasRead[0]) {
                 scrollerBehaviour.getOnPenultimatePageWasScrolled().
@@ -80,12 +87,11 @@ public class InfiniteScroller<T extends Serializable> {
 
     protected void populateWithItems(ArrayList<T> items) {
         int i = 0;
-        for (T item : items) {
-
-                ConstraintLayout constraintLayout = prepareInnerContainer();
-                createAndAddButton(i, item, constraintLayout);
-                i = transactFragment(i, item, constraintLayout);
-
+        for(T item : items) {
+            ConstraintLayout constraintLayout = prepareInnerContainer();
+            createAndAddButton(i, item, constraintLayout);
+            i = transactFragment(i, item, constraintLayout);
+            this.itemsVies.put(item, constraintLayout);
         }
     }
 
@@ -121,13 +127,34 @@ public class InfiniteScroller<T extends Serializable> {
 
 
     public void extend(ArrayList<T> items) {
-        populateWithItems(items);
+
+        int i = 0;
+        for (T item : items) {
+            if (this.itemsVies.containsKey(item)) {
+                int viewIndex = elementsOutline.container.indexOfChild(itemsVies.get(item));
+                elementsOutline.container.removeView(this.itemsVies.get(item));
+
+                ConstraintLayout constraintLayout = new ConstraintLayout(app);
+                constraintLayout.setId(View.generateViewId());
+                elementsOutline.container.addView(constraintLayout, viewIndex);
+                createAndAddButton(i, item, constraintLayout);
+                i = transactFragment(i, item, constraintLayout);
+                this.itemsVies.put(item, constraintLayout);
+
+            } else {
+                ConstraintLayout constraintLayout = prepareInnerContainer();
+                createAndAddButton(i, item, constraintLayout);
+                i = transactFragment(i, item, constraintLayout);
+                views.add(constraintLayout);
+                this.itemsVies.put(item, constraintLayout);
+            }
+        }
         latestPaginationWasRead[0] = false;
     }
 
     public void populate(ArrayList<T> items) {
-        this.items = new ArrayList<>();
         this.items = items;
+        this.itemsVies.clear();
         cleanAndPopulate();
     }
 

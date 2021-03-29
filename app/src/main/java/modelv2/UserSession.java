@@ -1,29 +1,20 @@
 package modelv2;
 
 import android.content.Context;
-import android.os.Parcel;
 import android.util.Log;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import android.view.View;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Source;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
-import com.google.firebase.messaging.RemoteMessageCreator;
 import com.maaps.expense.R;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -223,12 +214,15 @@ public class UserSession {
                         }
                         if (value != null) {
                             currentGroup.clearExpenses();
+                            ArrayList<Expense> newExpenses = new ArrayList<>();
                             for (DocumentSnapshot ds : value.getDocuments()) {
-                                currentGroup.addExpenseQuietly(new Expense(ds));
+                                Expense expense = new Expense(ds);
+                                currentGroup.addExpenseQuietly(expense);
                                 lasExpenseDocumentSpanshot = ds;
+                                newExpenses.add(expense);
                             }
                             if (onExpensesUpdated != null) {
-                                onExpensesUpdated.onExpensesUpdated(currentGroup.getExpenses());
+                                onExpensesUpdated.onExpensesUpdated(newExpenses);
                             }
                         }
                     });
@@ -268,11 +262,13 @@ public class UserSession {
                                             //currentGroup.updateExpenseQuietly(expense);
                                             newExpenses.add(expense);
                                             lasExpenseDocumentSpanshot = ds;
+
                                         }
                                         if (onExtraExpensesUpdated != null) {
                                             onExtraExpensesUpdated.
                                                     onExtraExpensesUpdated(newExpenses);
                                         }
+
                                     }
                                 });
                 extendedExpenseListeners.add(expenseListenerTmp);
@@ -460,6 +456,10 @@ public class UserSession {
             }
             this.expensesListenerSet = false;
         }
+    }
+    public void resetExpenseListeners(){
+    removeExpenseListeners();
+    setExpenseListener();
     }
 
     public void setOnExpensePushed(OnExpensePushed onExpensePushed) {

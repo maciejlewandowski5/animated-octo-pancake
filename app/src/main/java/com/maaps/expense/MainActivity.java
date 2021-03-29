@@ -14,7 +14,6 @@ import android.view.Window;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.maaps.expense.helpers.AccountHelper;
@@ -33,7 +32,7 @@ import modelv2.UserSession;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Expense.MainActivity";
     private static final String EXPENSE_ARG_FOR_EXPENSE_EDITOR = "EXPENSE";
-    private static  final  int EDIT_EXPENSE_RESULT = 1212;
+    private static final int EDIT_EXPENSE_RESULT = 1212;
 
     private int topBarId;
     private int heightOfListElementDp;
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         heightOfListElementDp = 11 + 11 + 2 + 9 + 18 + 12 + 18;
 
 
-
         initializeInfiniteScroller();
         accountHelper = new AccountHelper(this);
         accountHelper.configureGoogleClient();
@@ -74,17 +72,20 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == accountHelper.getRCSGININCode()) {
             accountHelper.verifySignInResults(TAG, data);
-        }else if (requestCode == EDIT_EXPENSE_RESULT) {
+        } else if (requestCode == EDIT_EXPENSE_RESULT) {
             if (resultCode == RESULT_OK) {
                 if (data.getData() != null) {
-                    if(data.getData().toString().equals("expense_edited")){
+                    if (data.getData().toString().equals("expense_edited")) {
+                        if (UserSession.getInstance().getCurrentGroup() != null) {
+                            userSession.resetExpenseListeners();
+                            //infiniteScroller.populate(userSession.getCurrentGroup().getExpenses());
 
+                        }
                     }
                 }
             }
         }
     }
-
 
 
     @Override
@@ -93,7 +94,9 @@ public class MainActivity extends AppCompatActivity {
         if (accountHelper.isLoggedIn()) {
             initializeUserSession();
             if (UserSession.getInstance().getCurrentGroup() != null) {
-                infiniteScroller.populate(UserSession.getInstance().getCurrentGroup().getExpenses());
+                infiniteScroller.populate(
+                        UserSession.getInstance().getCurrentGroup().getExpenses());
+
             }
         } else {
             accountHelper.setSignInSuccessful(user -> initializeUserSession());
@@ -113,8 +116,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     private void initializeInfiniteScroller() {
         InfiniteScrollerBuilder<Expense> infiniteScrollerBuilder =
                 new InfiniteScrollerBuilder<>(
@@ -132,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this
                 , new Pair<>(history, getString(R.string.animation_tag__history_title)));
         intent.putExtra(EXPENSE_ARG_FOR_EXPENSE_EDITOR, (Serializable) object);
-        startActivityForResult(intent, EDIT_EXPENSE_RESULT ,options.toBundle());
+        startActivityForResult(intent, EDIT_EXPENSE_RESULT, options.toBundle());
     }
 
     private void prepareViews() {
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         userSession.setOnExtraExpensesUpdated(expenses -> infiniteScroller.extend(expenses));
     }
 
-    private int calculateScrollerHeight(){
+    private int calculateScrollerHeight() {
         //TODO:: fix this monster!
         //Top bar
         //24dp+16dp paddings of top bar
@@ -216,14 +217,14 @@ public class MainActivity extends AppCompatActivity {
         // margin top 11 dp
         //margin bottom 5dp
 
-        return  (int) (Math.round(Utils.getScreenHeightPx(this)) -
-                (Utils.dpToPx(24+16+30+4+14+7+36+15+8+5+22+8+26+16+11+5,this) +
-                        Utils.spToPx(36+13+16+72+16,this)));
+        return (int) (Math.round(Utils.getScreenHeightPx(this)) -
+                (Utils.dpToPx(24 + 16 + 30 + 4 + 14 + 7 + 36 + 15 + 8 + 5 + 22 + 8 + 26 + 16 + 11 + 5, this) +
+                        Utils.spToPx(36 + 13 + 16 + 72 + 16, this)));
     }
 
     private int calculateNumberOfExpensesToListen() {
-        return (int) (calculateScrollerHeight()/
-                (float)Utils.dpToPx(heightOfListElementDp,this)) * 2;// for two pages, avoid zero
+        return (int) (calculateScrollerHeight() /
+                (float) Utils.dpToPx(heightOfListElementDp, this)) * 2;// for two pages, avoid zero
 
     }
 
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
         totalAmount.setText(Utils.formatPriceLocale(payedByUser));
 
         TopBar topBar = TopBar.newInstance(true);
-        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG,getString(R.string.you_sign_out)));
+        topBar.setLogOutInterface(() -> accountHelper.signOut(TAG, getString(R.string.you_sign_out)));
         topBarId = TopBar.refreshTopBar(topBarId, this, topBar);
     }
 

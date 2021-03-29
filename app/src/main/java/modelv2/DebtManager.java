@@ -1,5 +1,7 @@
 package modelv2;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -132,8 +134,8 @@ public class DebtManager {
         return new modelv2.User("", "");
     }
 
-    public ArrayList<modelv2.Expense> getExpenses() {
-        ArrayList<modelv2.Expense> expenses = new ArrayList<>();
+    public ArrayList<Expense> getExpenses() {
+        ArrayList<Expense> expenses = new ArrayList<>();
         for (Debt debt : debts) {
             Expense expense = new modelv2.Expense(
                     "Pay-back",

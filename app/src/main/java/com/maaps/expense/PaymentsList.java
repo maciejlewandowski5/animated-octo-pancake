@@ -12,9 +12,8 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.maaps.expense.helpers.infiniteScroller.InfiniteScroller;
 import com.maaps.expense.helpers.infiniteScroller.InfiniteScrollerBuilder;
-import com.maaps.expense.helpers.infiniteScroller.ScrollerBehaviour;
-import com.maaps.expense.helpers.infiniteScroller.ElementsOutline;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import modelv2.Expense;
 import modelv2.UserSession;
@@ -23,7 +22,7 @@ public class PaymentsList extends AppCompatActivity {
 
     ArrayList<modelv2.Expense> allDebts;
     ArrayList<modelv2.Expense> debtsToPay;
-    InfiniteScroller<modelv2.Expense> infiniteScroller;
+    InfiniteScroller<Expense> infiniteScroller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,8 +131,10 @@ public class PaymentsList extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        UserSession.getInstance().setOnDebtUpdated(expenses -> infiniteScroller.populate(expenses));
-        infiniteScroller.populate(UserSession.getInstance().getDebtExpenses());
+        UserSession.getInstance().setOnDebtUpdated(expenses -> {
+                infiniteScroller.populate(expenses);
+        });
+      //  infiniteScroller.populate(UserSession.getInstance().getDebtExpenses());
 
     }
 

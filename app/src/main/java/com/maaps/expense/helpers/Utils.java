@@ -19,6 +19,7 @@ import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
@@ -103,12 +104,8 @@ public class Utils {
         }
     }
 
-    public static String trim(String string){
-        if(string.length()>=25){
-            string = string.substring(0,25) + "...";
-        }
-        return string.replaceAll("(\\r\\n|\\r|\\n)"," ");
-    }
+
+
 
 
 

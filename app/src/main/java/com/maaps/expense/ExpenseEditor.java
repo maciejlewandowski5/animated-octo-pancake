@@ -5,10 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.View;
 import android.view.Window;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import com.maaps.expense.helpers.expenseEditor.BorrowerPayerPicker;
 import com.maaps.expense.helpers.expenseEditor.DateTimePicker;
 import com.maaps.expense.helpers.Utils;
@@ -19,6 +21,7 @@ import modelv2.UserSession;
 
 public class ExpenseEditor extends AppCompatActivity {
     private static final String EXPENSE = "EXPENSE";
+    private static final int EDIT_EXPENSE_RESULT = 1212;
 
     private TextView amount;
     private SeekBar seekBar;
@@ -85,7 +88,8 @@ public class ExpenseEditor extends AppCompatActivity {
 
         seekBar.setProgress(Float.valueOf(group.getMean() * 100/*as percent*/).intValue());
 
-        amount.setText(Utils.formatPriceLocale(group.getMean()));
+        amount.setHint(Utils.formatPriceLocale(group.getMean()));
+        amount.setText("");
     }
 
     private void initializeInputValuesFromExpense() {
@@ -108,7 +112,7 @@ public class ExpenseEditor extends AppCompatActivity {
     private void initializeNotViewsParameters() {
         userSession = UserSession.getInstance();
         group = userSession.getCurrentGroup();
-        borrowerPayerPicker = new BorrowerPayerPicker(R.id.container,R.id.add_borrower,R.id.textView7,this);
+        borrowerPayerPicker = new BorrowerPayerPicker(R.id.container, R.id.add_borrower, R.id.textView7, this);
         dateTimePicker = new DateTimePicker(findViewById(R.id.editTextDate));
     }
 
@@ -124,6 +128,7 @@ public class ExpenseEditor extends AppCompatActivity {
     public void sendExpenseClick(View view) {
         if (isEachInputFilled()) {
             attemptSendExpense();
+            //finishActivity(EDIT_EXPENSE_RESULT);
             onBackPressed();
         } else {
             Utils.toastMessage(getString(R.string.please_fill), this);
@@ -141,7 +146,7 @@ public class ExpenseEditor extends AppCompatActivity {
                     borrowerPayerPicker.getBorrowers());
 
             Intent data = new Intent();
-            data.setData(Uri.parse(""));
+            data.setData(Uri.parse("expense_edited"));
             setResult(RESULT_OK, data);
 
         } else {
@@ -192,10 +197,16 @@ public class ExpenseEditor extends AppCompatActivity {
     public void addBorrowerButtonClick(View view) {
         borrowerPayerPicker.addBorrowerButtonClick();
     }
-    public void removeUserFromBorrowerClick(View view){
+
+    public void removeUserFromBorrowerClick(View view) {
         borrowerPayerPicker.removeUserFromBorrowerClick(view);
     }
+
     public void pickDateTime(View view) {
-    dateTimePicker.pick(this);
+        if (expense == null) {
+            dateTimePicker.pick(this);
+        } else {
+            Utils.toastMessage("You can not edit date", this);
+        }
     }
 }

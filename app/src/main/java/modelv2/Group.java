@@ -1,5 +1,7 @@
 package modelv2;
 
+import android.view.View;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -9,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class Group implements Serializable {
     private String id;

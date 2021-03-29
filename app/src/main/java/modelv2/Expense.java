@@ -105,6 +105,34 @@ public class Expense implements Serializable {
         }
     }
 
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static boolean isUpToDate(Expense newExpense,Expense onDeviceExpense){
+        if(!newExpense.getId().equals(onDeviceExpense.getId())){
+            return false;
+        }
+        if(!newExpense.borrowers.equals(onDeviceExpense.getBorrowers())){
+            return false;
+        }
+        if(!newExpense.amount.equals(onDeviceExpense.amount)){
+            return false;
+        }
+        if(!newExpense.dateTime.equals(onDeviceExpense.dateTime)){
+            return false;
+        }
+        if(!newExpense.payer.equals(onDeviceExpense.payer)){
+            return false;
+        }
+        if(!newExpense.name.equals(onDeviceExpense.name)){
+            return false;
+        }
+        return true;
+    }
+
     public void setId(String id) {
     this.id = id;
     }

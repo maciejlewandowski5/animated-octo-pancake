@@ -26,11 +26,8 @@ public class DateTimePicker {
 
     public DateTimePicker(TextView editDate) {
         this.editDate = editDate;
-        hour=1;
-        month=1;
-        year=1;
-        day=1;
-        minute=1;
+
+
     }
 
     public void pick(AppCompatActivity activity) {
@@ -68,10 +65,26 @@ public class DateTimePicker {
     }
 
     public void initialInputFromUserSession() {
-        editDate.setText(Utils.formatDateLocale(new Date()));
+        Calendar calendar = Calendar.getInstance();
+        editDate.setText(Utils.formatDateLocale(calendar.getTime()));
+        month=calendar.get(Calendar.MONTH);
+        year=calendar.get(Calendar.YEAR);
+        day=calendar.get(Calendar.DAY_OF_MONTH);
+        hour=calendar.get(Calendar.HOUR);
+        minute=calendar.get(Calendar.MINUTE);
     }
 
     public void initialInputFromExpense(Expense expense) {
+
+
+        Calendar calendar = Calendar.getInstance();
+
         editDate.setText(Utils.formatDateLocale(expense.getDateTime()));
+        calendar.setTime(expense.getDateTime());
+        month=calendar.get(Calendar.MONTH);
+        year=calendar.get(Calendar.YEAR);
+        day=calendar.get(Calendar.DAY_OF_MONTH);
+        hour=calendar.get(Calendar.HOUR);
+        minute=calendar.get(Calendar.MINUTE);
     }
 }
