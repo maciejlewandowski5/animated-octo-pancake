@@ -13,6 +13,7 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 
 🟢 - done, no major flaws
 🔴 - temporary solution
+🟠 - done, but limit functionality
 
 
 | No. | Title | Due date | Status | Description |
@@ -36,7 +37,7 @@ Main purpose of Expense is to simplify gorups budgets managment. Execelent sollu
 | 17. | Creating tests | 2021-04-05 |  | |
 | 18. | Re-designing payments confirmation layout | | |
 | 19. | Re-designing leave group lay-out | | | 
-| 20. | Fix bug with duplicate expenses on extended listners| | |
+| 20. | Fix bug with duplicate expenses on extended listners| 2021-03-29 | 🟠 | Editing date was blocked. |
 | 21. | Fix bug with initial number of elments i inifnity scroller | 2021-03-26 | 🔴 | terrible implementation, sizes are harcoded, re-do it later |
 
 	
